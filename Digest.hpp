@@ -21,11 +21,12 @@ class Digest {
       float descriptor_radius = 4;
     };
     typedef pcl::PointXYZ PointType;
+    typedef pcl::Normal NormalType;
     typedef pcl::PointXYZI KeypointType;
     typedef pcl::HarrisKeypoint3D<PointType, KeypointType> Detector;
     typedef pcl::FPFHSignature33 DescriptorType;
     typedef pcl::PointCloud<PointType> Cloud;
-    typedef pcl::PointCloud<pcl::Normal> NormalCloud;
+    typedef pcl::PointCloud<NormalType> NormalCloud;
     typedef pcl::PointCloud<KeypointType> KeypointCloud;
     typedef pcl::PointCloud<DescriptorType> DescriptorCloud;
 
@@ -64,10 +65,52 @@ class Digest {
     };
 
     /*!
-     * Returns the reduced cloud ptr.
+     * Returns the pointer to the pointcloud.
+     */
+    Cloud::Ptr getCloud() const {
+      return cloud_;
+    }
+
+    /*!
+     * Returns the pointer to the reduced pointcloud.
      */
     Cloud::Ptr getReducedCloud() const {
       return reduced_cloud_;
+    }
+
+    /*!
+     * Returns the pointer to the normals of the reduced pointcloud.
+     */
+    NormalCloud::Ptr getNormalCloud() const {
+      return normal_cloud_;
+    }
+
+    /*!
+     * Returns the pointer to the indices for the valid normals.
+     */
+    pcl::IndicesPtr getNormalCloudIndices() const {
+      return valid_normal_cloud_indices_;
+    }
+
+    /*!
+     * Returns the pointer to the keypoints of the reduced pointcloud.
+     */
+    KeypointCloud::Ptr getKeypointCloud() const {
+      return keypoint_cloud_;
+    }
+
+    /*!
+     * Returns the pointer to the indices for the valid keypoints of the reduced pointcloud.
+     */
+    Cloud::Ptr getKeypointCloudIndices() const {
+      return valid_keypoint_cloud_indices_;
+    }
+
+    /*!
+     * Returns the pointer to the descriptors of the reduced pointcloud (see getKeypointCloudIndices to find out for which points the descriptors are calculated).
+     */
+    Cloud::Ptr getDescriptorCloud() const {
+      return descriptor_cloud_;
     }
 
   protected:
@@ -89,7 +132,7 @@ class Digest {
 
     void calcNormals() {
     int not_finite_count = 0;
-      pcl::NormalEstimation<PointType, pcl::Normal> normal_estimation;
+      pcl::NormalEstimation<PointType, NormalType> normal_estimation;
       pcl::search::KdTree<PointType>::Ptr tree(new pcl::search::KdTree<PointType>());
       normal_estimation.setInputCloud(reduced_cloud_);
       normal_estimation.setSearchMethod(tree);
@@ -97,7 +140,7 @@ class Digest {
       normal_estimation.compute(*normal_cloud_);
       for (size_t i = 0; i < normal_cloud_->size(); ++i)
       {
-        if (!pcl::isFinite<pcl::Normal>(normal_cloud_->points[i])) 
+        if (!pcl::isFinite<NormalType>(normal_cloud_->points[i])) 
         {
           ++not_finite_count;
         }
@@ -141,7 +184,7 @@ class Digest {
     };
 
     void calcDescriptors() {
-      pcl::FPFHEstimation<pcl::PointXYZ, pcl::Normal, pcl::FPFHSignature33> fpfh_estimation;
+      pcl::FPFHEstimation<pcl::PointXYZ, NormalType, pcl::FPFHSignature33> fpfh_estimation;
       fpfh_estimation.setInputNormals(normal_cloud_);
       fpfh_estimation.setIndices(valid_keypoint_cloud_indices_);
       fpfh_estimation.setInputCloud(reduced_cloud_);

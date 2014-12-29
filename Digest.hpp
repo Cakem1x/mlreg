@@ -61,6 +61,13 @@ class Digest {
     virtual ~Digest() {
     };
 
+    /*!
+     * Returns the reduced cloud ptr.
+     */
+    Cloud::Ptr getReducedCloud() const {
+      return reduced_cloud_;
+    }
+
   protected:
     Cloud::Ptr cloud_;
     Cloud::Ptr reduced_cloud_;

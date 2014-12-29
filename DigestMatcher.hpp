@@ -6,16 +6,23 @@
  *
  */
 //----------------------------------------------------------------------
-#ifndef DIGEST_MATCHER_HPP_INCLUDED
-#define DIGEST_MATCHER_HPP_INCLUDED
+#ifndef DIGEST_MATCH_HPP_INCLUDED
+#define DIGEST_MATCH_HPP_INCLUDED
 
 #include "Digest.hpp"
 
 /*!
- * The DigestMatcher is used to match two Digests.
+ * The DigestMatch is used to match two Digests.
  * This means that this class uses the descriptors of the Digest to calculate a transformation between the two Digest's pointclouds when they overlap enough.
  */
-class DigestMatcher {
+class DigestMatch {
+  public:
+
+    /*!
+     * This struct is used for storing the parameters used by the algorithms which create the digest match.
+     */
+    struct Parameters {
+    };
 };
 
 #endif

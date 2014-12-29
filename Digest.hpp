@@ -19,7 +19,7 @@
 
 /*!
  * Class to create and store the important features and descriptors for one pointcloud.
- * Two digests can be used by the DigestMatcher to check whether the pointclouds overlap and to get a tranformation between the two pointclouds.
+ * Two digests can be used by the DigestMatch to check whether the pointclouds overlap and to get a tranformation between the two pointclouds.
  */
 class Digest {
 

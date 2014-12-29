@@ -58,9 +58,6 @@ class Digest {
         descriptor_cloud_(new DescriptorCloud),
         params_(params)
     {
-      // Set the pointcloud's viewport to the identity
-      // cloud_->sensor_orientation_ = Eigen::Quaternionf::Identity();
-      // cloud_->sensor_origin_ = Eigen::Vector4f::Identity();
       // Apply voxel grid filter
       voxelGrid();
       // Get the normals of the pointcloud

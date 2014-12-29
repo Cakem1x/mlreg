@@ -44,8 +44,8 @@ class Digest {
         params_(params)
     {
       // Set the pointcloud's viewport to the identity
-      cloud_->sensor_orientation_ = Eigen::Quaternionf::Identity();
-      cloud_->sensor_origin_ = Eigen::Vector4f::Identity();
+      // cloud_->sensor_orientation_ = Eigen::Quaternionf::Identity();
+      // cloud_->sensor_origin_ = Eigen::Vector4f::Identity();
       // Apply voxel grid filter
       voxelGrid();
       // Get the normals of the pointcloud
@@ -153,6 +153,8 @@ class Digest {
       {
         std::cout << not_finite_count << " of " << normal_cloud_->size() << " cloud normals are not finite!" << std::endl;
       }
+      normal_cloud_->sensor_orientation_ = cloud_->sensor_orientation_;
+      normal_cloud_->sensor_origin_ = cloud_->sensor_origin_;
     };
 
     void calcHarris3D() {
@@ -193,8 +195,8 @@ class Digest {
       fpfh_estimation.setRadiusSearch(params_->descriptor_radius);
       // Compute the features
       fpfh_estimation.compute(*descriptor_cloud_);
-      descriptor_cloud_->sensor_orientation_ = keypoint_cloud_->sensor_orientation_;
-      descriptor_cloud_->sensor_origin_ = keypoint_cloud_->sensor_origin_;
+      descriptor_cloud_->sensor_orientation_ = cloud_->sensor_orientation_;
+      descriptor_cloud_->sensor_origin_ = cloud_->sensor_origin_;
       // Debug-output
       std::cout << "Extracted " << descriptor_cloud_->size() << " descriptors." << std::endl;
     };

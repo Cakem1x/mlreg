@@ -43,7 +43,16 @@ int main(int argc, char** argv) {
   vis.addPointCloud<Digest::PointType>(digest_target->getReducedCloud(), "reduced_cloud_target");
   vis.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 2, "reduced_cloud_target");
 
-  // Draw lines for the correspondences
+  // Add the keypoints of the reduced pointclouds
+  pcl::visualization::PointCloudColorHandlerCustom<Digest::KeypointType> source_keypoint_color_handler(digest_source->getKeypointCloud(), 0, 255, 0);
+  vis.addPointCloud<Digest::KeypointType>(digest_source->getKeypointCloud(), source_keypoint_color_handler, "keypoint_cloud_source");
+  vis.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 6, "keypoint_cloud_source");
+  pcl::visualization::PointCloudColorHandlerCustom<Digest::KeypointType> target_keypoint_color_handler(digest_target->getKeypointCloud(), 0, 0, 255); 
+  vis.addPointCloud<Digest::KeypointType>(digest_target->getKeypointCloud(), target_keypoint_color_handler, "keypoint_cloud_target");
+  vis.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 6, "keypoint_cloud_target");
+
+
+  // Draw lines for the correspondences between the reduced pointclouds
 
   while (!vis.wasStopped()) {
     vis.spinOnce(100);

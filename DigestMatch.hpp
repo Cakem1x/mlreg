@@ -28,7 +28,7 @@ class DigestMatch {
      * This struct defines the relation between a pair of descriptors of two pointclouds
      */
     struct Correspondence {
-      Correspondence(int source_id, int target_id, distance)
+      Correspondence(int source_id, int target_id, Digest::DescriptorType distance)
         : source_id(source_id), target_id(target_id), distance(distance)
       { }
 
@@ -37,12 +37,14 @@ class DigestMatch {
       Digest::DescriptorType distance;
     };
 
+    typedef std::vector<Correspondence> Correspondences;
+
     DigestMatch(std::shared_ptr<Digest> digest_source, std::shared_ptr<Digest> digest_target) 
       : digest_source_(digest_source), digest_target_(digest_target)
     {
       // Create a correspondence between each valid keypoint of the digests ("n²" correspondences)
-      Digest::DescriptorCloud descr_source = digest_source_->getDescriptorCloud();
-      Digest::DescriptorCloud descr_target = digest_target_->getDescriptorCloud();
+      Digest::DescriptorCloud::Ptr descr_source = digest_source_->getDescriptorCloud();
+      Digest::DescriptorCloud::Ptr descr_target = digest_target_->getDescriptorCloud();
       for (unsigned int i = 0; i < descr_source->size(); ++i) {
         for (unsigned int j = 0; j < descr_target->size(); ++j) {
           correspondences_->push_back(Correspondence(i, j, descriptorDistance(descr_source->at(i), descr_target->at(i))));
@@ -53,13 +55,13 @@ class DigestMatch {
   protected:
     std::shared_ptr<Digest> digest_source_;
     std::shared_ptr<Digest> digest_target_;
-    pcl::CorrespondencesPtr correspondences_;
+    std::shared_ptr<Correspondences> correspondences_;
 
     /*!
      * Returns the distance of two FPFHSignatur33 descriptors.
      */
     Digest::DescriptorType descriptorDistance(Digest::DescriptorType d1, Digest::DescriptorType d2) {
-      Digest::DescriptorType dr();
+      Digest::DescriptorType dr;
       for (unsigned int i = 0; i < 33; ++i) {
         dr.histogram[i] = d1.histogram[i] - d2.histogram[i];
       }

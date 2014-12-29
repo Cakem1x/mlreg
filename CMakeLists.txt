@@ -16,5 +16,7 @@ add_definitions(${PCL_DEFINITIONS})
 
 add_executable (mlreg mlreg.cpp Digest.hpp)
 add_executable (vis_single_pointcloud vis_single_pointcloud.cpp Digest.hpp)
+add_executable (vis_digest_match vis_digest_match.cpp Digest.hpp DigestMatch.hpp)
 target_link_libraries (mlreg ${PCL_LIBRARIES})
 target_link_libraries (vis_single_pointcloud ${PCL_LIBRARIES})
+target_link_libraries (vis_digest_match ${PCL_LIBRARIES})

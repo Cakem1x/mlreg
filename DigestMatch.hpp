@@ -39,8 +39,11 @@ class DigestMatch {
 
     typedef std::vector<Correspondence> Correspondences;
 
-    DigestMatch(std::shared_ptr<Digest> digest_source, std::shared_ptr<Digest> digest_target) 
-      : digest_source_(digest_source), digest_target_(digest_target)
+    DigestMatch(std::shared_ptr<Digest> digest_source, std::shared_ptr<Digest> digest_target, std::shared_ptr<struct Parameters> params)
+      : digest_source_(digest_source), 
+        digest_target_(digest_target),
+        correspondences_(new Correspondences),
+        params_(params)
     {
       // Create a correspondence between each valid keypoint of the digests ("n²" correspondences)
       Digest::DescriptorCloud::Ptr descr_source = digest_source_->getDescriptorCloud();
@@ -56,6 +59,7 @@ class DigestMatch {
     std::shared_ptr<Digest> digest_source_;
     std::shared_ptr<Digest> digest_target_;
     std::shared_ptr<Correspondences> correspondences_;
+    std::shared_ptr<struct Parameters> params_;
 
     /*!
      * Returns the distance of two FPFHSignatur33 descriptors.

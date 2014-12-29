@@ -20,7 +20,10 @@ int main(int argc, char** argv) {
   // Add the normals of the reduced pointcloud
   vis.addPointCloudNormals<Digest::PointType, Digest::NormalType>(digest.getReducedCloud(), digest.getNormalCloud(), 1, 0.13, "reduced_cloud_normals");
 
-  // Add the keypoints with bigger dots
+  // Add the keypoints with bigger dots, colored by their intensity
+  pcl::visualization::PointCloudColorHandlerGenericField<Digest::KeypointType> keypointColorHandler(digest.getKeypointCloud(), "intensity");
+  vis.addPointCloud<Digest::KeypointType>(digest.getKeypointCloud(), keypointColorHandler, "keypoint_cloud");
+  vis.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 6, "keypoint_cloud");
 
   while (!vis.wasStopped()) {
     vis.spinOnce(100);

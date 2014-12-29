@@ -102,14 +102,14 @@ class Digest {
     /*!
      * Returns the pointer to the indices for the valid keypoints of the reduced pointcloud.
      */
-    Cloud::Ptr getKeypointCloudIndices() const {
+    pcl::IndicesPtr getKeypointCloudIndices() const {
       return valid_keypoint_cloud_indices_;
     }
 
     /*!
      * Returns the pointer to the descriptors of the reduced pointcloud (see getKeypointCloudIndices to find out for which points the descriptors are calculated).
      */
-    Cloud::Ptr getDescriptorCloud() const {
+    DescriptorCloud::Ptr getDescriptorCloud() const {
       return descriptor_cloud_;
     }
 

@@ -1,3 +1,11 @@
+//----------------------------------------------------------------------
+/*!\file
+ *
+ * \author  Matthias Holoch <mholoch@gmail.com>
+ * \date    2014-12-26
+ *
+ */
+//----------------------------------------------------------------------
 #ifndef DIGEST_HPP_INCLUDED
 #define DIGEST_HPP_INCLUDED
 
@@ -9,9 +17,16 @@
 #include <pcl/features/fpfh.h>
 #include <pcl/filters/voxel_grid.h>
 
+/*!
+ * Class to create and store the important features and descriptors for one pointcloud.
+ * Two digests can be used by the DigestMatcher to check whether the pointclouds overlap and to get a tranformation between the two pointclouds.
+ */
 class Digest {
 
   public:
+    /*!
+     * This struct is used for storing the parameters used by the algorithms which create the digest.
+     */
     struct Parameters {
       float voxelgrid_size = 0.2;
       float normal_radius = 0.6;

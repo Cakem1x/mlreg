@@ -34,9 +34,11 @@ class Digest {
      */
     Digest(Cloud::Ptr cloud, std::shared_ptr<Digest::Parameters> params)
       : cloud_(cloud),
+        reduced_cloud_(new Cloud),
         normal_cloud_(new NormalCloud), 
         valid_normal_cloud_indices_(new std::vector<int>),
         keypoint_cloud_(new KeypointCloud),
+        valid_keypoint_cloud_indices_(new std::vector<int>),
         descriptor_cloud_(new DescriptorCloud),
         params_(params)
     {

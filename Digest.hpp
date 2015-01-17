@@ -48,7 +48,7 @@ class Digest {
     /*!
      * Constructor which creates a Digest from a pointcloud stored in the filesystem
      */
-    Digest(Cloud::Ptr cloud, Digest::Parameters &params)
+    Digest(Cloud::Ptr cloud, Digest::Parameters& params)
       : cloud_(cloud),
         reduced_cloud_(new Cloud),
         normal_cloud_(new NormalCloud), 

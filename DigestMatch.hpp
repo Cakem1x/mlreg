@@ -21,16 +21,15 @@ template <typename MLMType>
 class DigestMatch {
 
   public:
+    typedef std::vector<TransformationHint> TransformationHints;
+    typedef std::vector<Correspondence> Correspondences;
+
     /*!
      * This struct is used for storing the parameters used by the algorithms which create the digest match.
      */
     struct Parameters {
       float hint_confidence_threshold_ = 0.9;
     };
-
-    /*
-    typedef std::vector<Correspondence> Correspondences;
-    typedef std::vector<struct TransformationHint> TransformationHints;
 
     /*!
      * Most general Constructor.

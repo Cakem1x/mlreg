@@ -9,6 +9,7 @@
 #ifndef DIGEST_MATCH_HPP_INCLUDED
 #define DIGEST_MATCH_HPP_INCLUDED
 
+#include "shared_types.hpp"
 #include "Digest.hpp"
 
 /*!
@@ -24,20 +25,10 @@ class DigestMatch {
      * This struct is used for storing the parameters used by the algorithms which create the digest match.
      */
     struct Parameters {
-      float hint_threshold_ = 0.9;
+      float hint_confidence_threshold_ = 0.9;
     };
 
-    struct TransformationHint {
-      typedef Eigen::Affine3f Transformation;
-
-      TransformationHint(Transformation transformation, float hint_confidence)
-        : transformation_(transformation), hint_confidence_(hint_confidence)
-      { }
-
-      Transformation transformation_;
-      float hint_confidence_;
-    };
-
+    
     /*!
      * This struct defines the relation between a pair of descriptors of two pointclouds
      */
@@ -74,7 +65,12 @@ class DigestMatch {
         }
       }
 
-      //TODO: Do training (if possible)
+      // Train the MLM when there are TransformationHints with suitable confidence
+      for (TransformationHints::iterator it = transformation_hints_.begin(); it < transformation_hints_.end(); ++it) {
+        if (it->confidence >= params_.hint_confidence_threshold) {
+          mlm_->train(*it);
+        }
+      }
       
       //TODO: Filter correspondences
     };

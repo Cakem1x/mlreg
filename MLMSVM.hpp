@@ -34,7 +34,7 @@ class MLMSVM {
     };
 
   protected:
-    CvSVM svm_;
+    SVM svm_;
 };
 
 #endif

@@ -22,6 +22,7 @@ class DigestMatch {
      * This struct is used for storing the parameters used by the algorithms which create the digest match.
      */
     struct Parameters {
+      float hint_threshold_ = 0.9;
     };
 
     /*!
@@ -38,11 +39,11 @@ class DigestMatch {
     };
 
     typedef std::vector<Correspondence> Correspondences;
+    typedef Eigen::Affine3f Transformation;
 
-    DigestMatch(std::shared_ptr<Digest> digest_source, std::shared_ptr<Digest> digest_target, std::shared_ptr<struct Parameters> params)
+    DigestMatch(std::shared_ptr<Digest> digest_source, std::shared_ptr<Digest> digest_target, struct Parameters &params)
       : digest_source_(digest_source), 
         digest_target_(digest_target),
-        correspondences_(new Correspondences),
         params_(params)
     {
       // Create a correspondence between each valid keypoint of the digests ("n²" correspondences)
@@ -50,7 +51,7 @@ class DigestMatch {
       Digest::DescriptorCloud::Ptr descr_target = digest_target_->getDescriptorCloud();
       for (unsigned int i = 0; i < descr_source->size(); ++i) {
         for (unsigned int j = 0; j < descr_target->size(); ++j) {
-          correspondences_->push_back(Correspondence(i, j, descriptorDistance(descr_source->at(i), descr_target->at(i))));
+          correspondences_.push_back(Correspondence(i, j, descriptorDistance(descr_source->at(i), descr_target->at(i))));
         }
       }
     };
@@ -58,13 +59,14 @@ class DigestMatch {
   protected:
     std::shared_ptr<Digest> digest_source_;
     std::shared_ptr<Digest> digest_target_;
-    std::shared_ptr<Correspondences> correspondences_;
-    std::shared_ptr<struct Parameters> params_;
+    Correspondences correspondences_;
+    struct Parameters params_;
+    Transformation transformation_hint_;
 
     /*!
      * Returns the distance of two FPFHSignatur33 descriptors.
      */
-    Digest::DescriptorType descriptorDistance(Digest::DescriptorType d1, Digest::DescriptorType d2) {
+    Digest::DescriptorType descriptorDistance(Digest::DescriptorType &d1, Digest::DescriptorType &d2) const {
       Digest::DescriptorType dr;
       for (unsigned int i = 0; i < 33; ++i) {
         dr.histogram[i] = d1.histogram[i] - d2.histogram[i];

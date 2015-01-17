@@ -13,7 +13,7 @@
 
 int main(int argc, char** argv) {
   Digest::Cloud::Ptr pointcloud(new Digest::Cloud);
-  std::shared_ptr<Digest::Parameters> params(new Digest::Parameters);
+  Digest::Parameters params;
 
   // Load pointcloud
   pcl::io::loadPCDFile(argv[1], *pointcloud);

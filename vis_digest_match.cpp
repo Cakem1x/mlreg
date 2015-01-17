@@ -15,8 +15,8 @@
 int main(int argc, char** argv) {
   Digest::Cloud::Ptr pointcloud_source(new Digest::Cloud);
   Digest::Cloud::Ptr pointcloud_target(new Digest::Cloud);
-  std::shared_ptr<Digest::Parameters> params_digest(new Digest::Parameters);
-  std::shared_ptr<DigestMatch::Parameters> params_digest_match(new DigestMatch::Parameters);
+  Digest::Parameters params_digest;
+  DigestMatch::Parameters params_digest_match;
 
   // Load pointclouds
   pcl::io::loadPCDFile(argv[1], *pointcloud_source);

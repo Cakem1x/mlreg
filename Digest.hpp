@@ -48,7 +48,7 @@ class Digest {
     /*!
      * Constructor which creates a Digest from a pointcloud stored in the filesystem
      */
-    Digest(Cloud::Ptr cloud, std::shared_ptr<Digest::Parameters> params)
+    Digest(Cloud::Ptr cloud, Digest::Parameters &params)
       : cloud_(cloud),
         reduced_cloud_(new Cloud),
         normal_cloud_(new NormalCloud), 
@@ -133,12 +133,12 @@ class Digest {
     KeypointCloud::Ptr keypoint_cloud_;
     pcl::IndicesPtr valid_keypoint_cloud_indices_;
     DescriptorCloud::Ptr descriptor_cloud_;
-    std::shared_ptr<struct Parameters> params_;
+    struct Parameters params_;
 
     void voxelGrid() {
       pcl::VoxelGrid<PointType> vg;
       vg.setInputCloud(cloud_);
-      vg.setLeafSize(params_->voxelgrid_size, params_->voxelgrid_size, params_->voxelgrid_size);
+      vg.setLeafSize(params_.voxelgrid_size, params_.voxelgrid_size, params_.voxelgrid_size);
       vg.filter(*reduced_cloud_);
     };
 
@@ -148,7 +148,7 @@ class Digest {
       pcl::search::KdTree<PointType>::Ptr tree(new pcl::search::KdTree<PointType>());
       normal_estimation.setInputCloud(reduced_cloud_);
       normal_estimation.setSearchMethod(tree);
-      normal_estimation.setRadiusSearch(params_->normal_radius);
+      normal_estimation.setRadiusSearch(params_.normal_radius);
       normal_estimation.compute(*normal_cloud_);
       for (size_t i = 0; i < normal_cloud_->size(); ++i)
       {
@@ -174,8 +174,8 @@ class Digest {
       detector->setNonMaxSupression(true);
       detector->setRefine(false);
       detector->setNormals(normal_cloud_);
-      detector->setRadius(params_->keypoint_radius);
-      //detector->setRadiusSearch(params_->keypoint_radius);
+      detector->setRadius(params_.keypoint_radius);
+      //detector->setRadiusSearch(params_.keypoint_radius);
       detector->setIndices(valid_normal_cloud_indices_);
       detector->setMethod(pcl::HarrisKeypoint3D<pcl::PointXYZ, pcl::PointXYZI>::CURVATURE);
       detector->setInputCloud(reduced_cloud_);
@@ -190,7 +190,7 @@ class Digest {
       for (std::vector<int>::iterator it = valid_normal_cloud_indices_->begin(); it != valid_normal_cloud_indices_->end(); ++it)
       {
         // TODO: Instead of a fixed threshold, choose a number of keypoints you want and let the algorithm decide the threshold needed for that.
-        if (keypoint_cloud_->points[*it].intensity >= params_->keypoint_threshold)
+        if (keypoint_cloud_->points[*it].intensity >= params_.keypoint_threshold)
         {
           valid_keypoint_cloud_indices_->push_back(*it);
         }
@@ -204,7 +204,7 @@ class Digest {
       fpfh_estimation.setInputCloud(reduced_cloud_);
       pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>);
       fpfh_estimation.setSearchMethod(tree);
-      fpfh_estimation.setRadiusSearch(params_->descriptor_radius);
+      fpfh_estimation.setRadiusSearch(params_.descriptor_radius);
       // Compute the features
       fpfh_estimation.compute(*descriptor_cloud_);
       descriptor_cloud_->sensor_orientation_ = cloud_->sensor_orientation_;

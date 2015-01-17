@@ -8,15 +8,19 @@
 //----------------------------------------------------------------------
 #include "Digest.hpp"
 #include "DigestMatch.hpp"
+#include "MLMSVM.hpp"
 
 #include <pcl/visualization/pcl_visualizer.h>
 #include <pcl/io/pcd_io.h>
+
+typedef MLMSVM MLMType;
 
 int main(int argc, char** argv) {
   Digest::Cloud::Ptr pointcloud_source(new Digest::Cloud);
   Digest::Cloud::Ptr pointcloud_target(new Digest::Cloud);
   Digest::Parameters params_digest;
-  DigestMatch::Parameters params_digest_match;
+  DigestMatch<MLMType>::Parameters params_digest_match;
+  std::shared_ptr<MLMType> mlm(new MLMType());
 
   // Load pointclouds
   pcl::io::loadPCDFile(argv[1], *pointcloud_source);
@@ -27,7 +31,7 @@ int main(int argc, char** argv) {
   std::shared_ptr<Digest> digest_target(new Digest(pointcloud_target, params_digest));
 
   // Put the Digests into a DigestMatch!
-  DigestMatch digest_match(digest_source, digest_target, params_digest_match);
+  DigestMatch<MLMType> digest_match(digest_source, digest_target, params_digest_match, mlm);
 
   //--------------------------------------------------------------------
   // Visualization-stuff from here:

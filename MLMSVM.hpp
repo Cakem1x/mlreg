@@ -1,0 +1,40 @@
+//----------------------------------------------------------------------
+/*!\file
+ *
+ * \author  Matthias Holoch <mholoch@gmail.com>
+ * \date    2015-01-17
+ *
+ */
+//----------------------------------------------------------------------
+#ifndef MLMSVM_HPP_INCLUDED
+#define MLMSVM_HPP_INCLUDED
+
+#include <opencv2/core/core.hpp>
+#include <opencv2/ml/ml.hpp>
+#include "shared_types.hpp"
+
+using namespace cv;
+
+class MLMSVM {
+  public:
+    /*!
+     * Default constructor.
+     */
+    MLMSVM()
+     : svm_()
+    {
+
+    };
+
+    void train(TransformationHint transformation_hint) {
+    };
+
+    bool classify(Correspondence correspondence) {
+      return true;
+    };
+
+  protected:
+    CvSVM svm_;
+};
+
+#endif

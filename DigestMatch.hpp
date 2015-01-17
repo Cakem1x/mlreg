@@ -13,8 +13,10 @@
 
 /*!
  * The DigestMatch is used to match two Digests.
- * This means that this class uses the descriptors of the Digest to calculate a transformation between the two Digest's pointclouds when they overlap enough.
+ * This class uses the descriptors of the Digest to calculate a transformation between the two Digest's pointclouds when they overlap enough.
+ * It's templated with a machine learning module (MLMType) which is be used to filter the correspondences.
  */
+template <typename MLMType>
 class DigestMatch {
 
   public:
@@ -56,9 +58,10 @@ class DigestMatch {
      * Most general Constructor.
      * The machine learning module will be trained with each TransformationHint which has a big enough confidence value.
      */
-    DigestMatch(std::shared_ptr<Digest> digest_source, std::shared_ptr<Digest> digest_target, struct Parameters &params, TransformationHints transformation_hints)
+    DigestMatch(std::shared_ptr<Digest> digest_source, std::shared_ptr<Digest> digest_target, std::shared_ptr<MLMType> mlm, struct Parameters &params, TransformationHints transformation_hints)
       : digest_source_(digest_source), 
         digest_target_(digest_target),
+        mlm_(mlm),
         params_(params),
         transformation_hints_(transformation_hints)
     {
@@ -81,16 +84,16 @@ class DigestMatch {
      * The machine learning module will be trained with the transformation_hint
      * when its confidence value is bigger than the threshold from the parameters.
      */
-    DigestMatch(std::shared_ptr<Digest> digest_source, std::shared_ptr<Digest> digest_target, struct Parameters &params, TransformationHint& transformation_hint)
-      : DigestMatch(digest_source, digest_target, params, TransformationHints(1, transformation_hint))
+    DigestMatch(std::shared_ptr<Digest> digest_source, std::shared_ptr<Digest> digest_target, std::shared_ptr<MLMType> mlm, struct Parameters &params, TransformationHint& transformation_hint)
+      : DigestMatch(digest_source, digest_target, mlm, params, TransformationHints(1, transformation_hint))
     { };
 
     /*!
      * Constructor without a transformation_hint.
      * The machine learning module will not be trained.
      */
-    DigestMatch(std::shared_ptr<Digest> digest_source, std::shared_ptr<Digest> digest_target, struct Parameters &params)
-      : DigestMatch(digest_source, digest_target, params, TransformationHints())
+    DigestMatch(std::shared_ptr<Digest> digest_source, std::shared_ptr<Digest> digest_target, std::shared_ptr<MLMType> mlm, struct Parameters &params)
+      : DigestMatch(digest_source, digest_target, mlm, params, TransformationHints())
     { };
 
     /*!
@@ -102,6 +105,7 @@ class DigestMatch {
   protected:
     std::shared_ptr<Digest> digest_source_;
     std::shared_ptr<Digest> digest_target_;
+    std::shared_ptr<MLMType> mlm_;
     Correspondences correspondences_;
     struct Parameters params_;
     TransformationHints transformation_hints_;

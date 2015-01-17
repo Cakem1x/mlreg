@@ -20,7 +20,8 @@ int main(int argc, char** argv) {
   Digest::Cloud::Ptr pointcloud_target(new Digest::Cloud);
   Digest::Parameters params_digest;
   DigestMatch<MLMType>::Parameters params_digest_match;
-  std::shared_ptr<MLMType> mlm(new MLMType());
+  // Create the machine learning module
+  std::shared_ptr<MLMType> mlm(new MLMType);
 
   // Load pointclouds
   pcl::io::loadPCDFile(argv[1], *pointcloud_source);
@@ -31,7 +32,7 @@ int main(int argc, char** argv) {
   std::shared_ptr<Digest> digest_target(new Digest(pointcloud_target, params_digest));
 
   // Put the Digests into a DigestMatch!
-  DigestMatch<MLMType> digest_match(digest_source, digest_target, params_digest_match, mlm);
+  DigestMatch<MLMType> digest_match(digest_source, digest_target, mlm, params_digest_match);
 
   //--------------------------------------------------------------------
   // Visualization-stuff from here:

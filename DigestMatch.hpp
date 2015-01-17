@@ -28,20 +28,7 @@ class DigestMatch {
       float hint_confidence_threshold_ = 0.9;
     };
 
-    
-    /*!
-     * This struct defines the relation between a pair of descriptors of two pointclouds
-     */
-    struct Correspondence {
-      Correspondence(int source_id, int target_id, Digest::DescriptorType distance)
-        : source_id(source_id), target_id(target_id), distance(distance)
-      { }
-
-      int source_id;
-      int target_id;
-      Digest::DescriptorType distance;
-    };
-
+    /*
     typedef std::vector<Correspondence> Correspondences;
     typedef std::vector<struct TransformationHint> TransformationHints;
 

@@ -5,11 +5,14 @@ project(mlreg)
 # The following line is only needed if you compiled the pcl yourself
 #set(PCL_DIR "path/to/your/local/pcl/build")
 find_package(PCL 1.7 REQUIRED)
+find_package(OpenCV REQUIRED)
 
 # Activate c++11 features
 SET(CMAKE_CXX_FLAGS "-std=c++0x")
 
 include_directories(${PCL_INCLUDE_DIRS})
+include_directories(${EIGEN_INCLUDE_DIRS})
+include_directories(${OPENCV_INCLUDE_DIRS})
 include_directories(${PROJECT_SOURCE_DIR})
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})

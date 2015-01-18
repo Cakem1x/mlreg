@@ -45,9 +45,11 @@ class DigestMatch {
       // Create a correspondence between each valid keypoint of the digests ("n²" correspondences)
       Digest::DescriptorCloud::Ptr descr_source = digest_source_->getDescriptorCloud();
       Digest::DescriptorCloud::Ptr descr_target = digest_target_->getDescriptorCloud();
+      pcl::IndicesPtr descr_i_source = digest_source_->getDescriptorCloudIndices();
+      pcl::IndicesPtr descr_i_target = digest_target_->getDescriptorCloudIndices();
       for (unsigned int i = 0; i < descr_source->size(); ++i) {
         for (unsigned int j = 0; j < descr_target->size(); ++j) {
-          correspondences_.push_back(Correspondence(i, j, descriptorDistance(descr_source->at(i), descr_target->at(i))));
+          correspondences_.push_back(Correspondence(i, j, descriptorDistance(descr_source->at(i), descr_target->at(j))));
         }
       }
 
@@ -83,6 +85,18 @@ class DigestMatch {
      */
     virtual ~DigestMatch() {
     };
+
+    /*!
+     * Getter for the current correspondences of this DigestMatch.
+     * Each correspondence contains the index of both source and target descriptors and their distance.
+     * To get the corresponding point from the original reduced point cloud, use the Digest's method getDescriptorCloudIndices().
+     * With descr_cloud_indices->at[correspondces.source_id] = n,
+     * the original point can be found at reduced_cloud[n].
+     * descr_cloud->at[correspondences.source_id] will get you the actual descriptor.
+     */
+    Correspondences getCorrespondences() {
+      return correspondences_;
+    }
 
   protected:
     std::shared_ptr<Digest> digest_source_;

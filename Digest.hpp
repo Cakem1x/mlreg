@@ -11,6 +11,8 @@
 
 #include <memory>
 
+#include <eigen3/Eigen/Geometry>
+
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/keypoints/harris_3d.h>
@@ -54,21 +56,36 @@ class Digest {
         normal_cloud_(new NormalCloud), 
         valid_normal_cloud_indices_(new std::vector<int>),
         keypoint_cloud_(new KeypointCloud),
-        valid_keypoint_cloud_indices_(new std::vector<int>),
+        descriptor_cloud_indices_(new std::vector<int>),
         descriptor_cloud_(new DescriptorCloud),
         params_(params)
     {
+      std::cout << "Creating digest of pointcloud with " << cloud_->size() << " points." << std::endl;
       // Apply voxel grid filter
       voxelGrid();
+      std::cout << "Voxel grid filter reduced the pointcloud to " << reduced_cloud_->size() << " points." << std::endl;
       // Get the normals of the pointcloud
       calcNormals();
+      std::cout << "Got " << valid_normal_cloud_indices_->size() << " valid normals." << std::endl;
       // Calculate the Harris3D Keypoints
       calcHarris3D();
+      std::cout << "Extracted " << keypoint_cloud_->size() << " Harris3D keypoints." << std::endl;
       // Calculate the indices of the keypoints we want to use (e.g. those over a threshold)
-      calcKeypointIndices();
+      calcDescriptorIndices();
+      std::cout << descriptor_cloud_indices_->size() << " Keypoints are above threshold." << std::endl;
       // Calculate the descriptor for all points with the above indices
       calcDescriptors();
+      std::cout << "Extracted " << descriptor_cloud_->size() << " descriptors." << std::endl;
     };
+
+    /*!
+     * Copy constructor with a transformation to transform the copied digest
+     */
+    Digest(const Digest& other, const Eigen::Affine3f& tf) 
+      : Digest(other)
+    {
+      // TODO stub
+    }
 
     /*! 
      * Destructor.
@@ -112,10 +129,25 @@ class Digest {
     }
 
     /*!
-     * Returns the pointer to the indices for the valid keypoints of the reduced pointcloud.
+     * Returns a pointer a point cloud containing only those points for which
+     * descriptors were calculated. (so which keypoints were above the threshold)
+     * The descriptor for point[n] is descriptor[n].
+     */
+    Cloud::Ptr getDescriptorCloudPoints() const {
+      Cloud::Ptr descriptor_cloud_points(new Cloud());
+      for (std::vector<int>::iterator it = descriptor_cloud_indices_->begin(); it != descriptor_cloud_indices_->end(); ++it) {
+        descriptor_cloud_points->push_back(reduced_cloud_->at(*it));
+      }
+      return descriptor_cloud_points;
+    }
+
+    /*!
+     * Returns the pointer to the indices for the keypoints of the reduced pointcloud.
+     * Those indices can be used to get the XYZ points or normals for each keypoint.
+     * The index m of the point and normal of keypoint[n] is indices[n] = m.
      */
     pcl::IndicesPtr getKeypointCloudIndices() const {
-      return valid_keypoint_cloud_indices_;
+      return keypoint_cloud_indices_;
     }
 
     /*!
@@ -125,14 +157,33 @@ class Digest {
       return descriptor_cloud_;
     }
 
+    /*!
+     * Returns the pointer to the indices for the descriptors of the reduced pointcloud.
+     * Those indices can be used to get the XYZ points or normals for each descriptor, 
+     * The index m of the point and normal of descriptor[n] is indices[n] = m.
+     */
+    pcl::IndicesPtr getDescriptorCloudIndices() const {
+      return descriptor_cloud_indices_;
+    }
+
   protected:
+    //! Stores the full point cloud
     Cloud::Ptr cloud_;
+    //! Stores the reduces point cloud
     Cloud::Ptr reduced_cloud_;
+    //! Stores the normals, indices corresponding to the reduced point cloud
     NormalCloud::Ptr normal_cloud_;
+    //! Contains all indices to valid normals
     pcl::IndicesPtr valid_normal_cloud_indices_;
+    //! Stores the keypoints (containing their position in space, redundant in reduced_cloud_)
     KeypointCloud::Ptr keypoint_cloud_;
-    pcl::IndicesPtr valid_keypoint_cloud_indices_;
+    //! Contains the indices to get from a keypoint to its original XYZ-point (or its normal)
+    pcl::IndicesPtr keypoint_cloud_indices_;
+    //! Contains all indices to points with valid keypoints
+    pcl::IndicesPtr descriptor_cloud_indices_;
+    //! Contains the descriptors, indices corresponding to the descriptor_cloud_indices_
     DescriptorCloud::Ptr descriptor_cloud_;
+    //! Stores the parameters of the digest
     struct Parameters params_;
 
     void voxelGrid() {
@@ -143,13 +194,14 @@ class Digest {
     };
 
     void calcNormals() {
-    int not_finite_count = 0;
+      int not_finite_count = 0;
       pcl::NormalEstimation<PointType, NormalType> normal_estimation;
       pcl::search::KdTree<PointType>::Ptr tree(new pcl::search::KdTree<PointType>());
       normal_estimation.setInputCloud(reduced_cloud_);
       normal_estimation.setSearchMethod(tree);
       normal_estimation.setRadiusSearch(params_.normal_radius);
       normal_estimation.compute(*normal_cloud_);
+      assert(normal_cloud_->size() == reduced_cloud_->size());
       for (size_t i = 0; i < normal_cloud_->size(); ++i)
       {
         if (!pcl::isFinite<NormalType>(normal_cloud_->points[i])) 
@@ -171,28 +223,29 @@ class Digest {
 
     void calcHarris3D() {
       Detector::Ptr detector(new pcl::HarrisKeypoint3D<pcl::PointXYZ, pcl::PointXYZI>);
+      detector->setInputCloud(reduced_cloud_);
+      detector->setNormals(normal_cloud_);
+      detector->setIndices(valid_normal_cloud_indices_);
       detector->setNonMaxSupression(true);
       detector->setRefine(false);
-      detector->setNormals(normal_cloud_);
       detector->setRadius(params_.keypoint_radius);
-      //detector->setRadiusSearch(params_.keypoint_radius);
-      detector->setIndices(valid_normal_cloud_indices_);
       detector->setMethod(pcl::HarrisKeypoint3D<pcl::PointXYZ, pcl::PointXYZI>::CURVATURE);
-      detector->setInputCloud(reduced_cloud_);
+      //detector->setRadiusSearch(params_.keypoint_radius);
       detector->compute(*keypoint_cloud_);
+      keypoint_cloud_indices_.reset(new std::vector<int>(detector->getKeypointsIndices()->indices));
+      assert(keypoint_cloud_indices_->size() == keypoint_cloud_->size());
 
       keypoint_cloud_->sensor_orientation_ = cloud_->sensor_orientation_;
       keypoint_cloud_->sensor_origin_ = cloud_->sensor_origin_;
-      std::cout << "Extracted " << keypoint_cloud_->size() << " Harris3D keypoints." << std::endl;
     };
 
-    void calcKeypointIndices() {
-      for (std::vector<int>::iterator it = valid_normal_cloud_indices_->begin(); it != valid_normal_cloud_indices_->end(); ++it)
+    void calcDescriptorIndices() {
+      for (unsigned int i = 0; i < keypoint_cloud_indices_->size(); ++i)
       {
         // TODO: Instead of a fixed threshold, choose a number of keypoints you want and let the algorithm decide the threshold needed for that.
-        if (keypoint_cloud_->points[*it].intensity >= params_.keypoint_threshold)
+        if (keypoint_cloud_->points[i].intensity >= params_.keypoint_threshold)
         {
-          valid_keypoint_cloud_indices_->push_back(*it);
+          descriptor_cloud_indices_->push_back(i);
         }
       }
     };
@@ -200,8 +253,8 @@ class Digest {
     void calcDescriptors() {
       pcl::FPFHEstimation<pcl::PointXYZ, NormalType, pcl::FPFHSignature33> fpfh_estimation;
       fpfh_estimation.setInputNormals(normal_cloud_);
-      fpfh_estimation.setIndices(valid_keypoint_cloud_indices_);
       fpfh_estimation.setInputCloud(reduced_cloud_);
+      fpfh_estimation.setIndices(descriptor_cloud_indices_);
       pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>);
       fpfh_estimation.setSearchMethod(tree);
       fpfh_estimation.setRadiusSearch(params_.descriptor_radius);
@@ -210,7 +263,7 @@ class Digest {
       descriptor_cloud_->sensor_orientation_ = cloud_->sensor_orientation_;
       descriptor_cloud_->sensor_origin_ = cloud_->sensor_origin_;
       // Debug-output
-      std::cout << "Extracted " << descriptor_cloud_->size() << " descriptors." << std::endl;
+      assert(descriptor_cloud_->size() == descriptor_cloud_indices_->size());
     };
 };
 

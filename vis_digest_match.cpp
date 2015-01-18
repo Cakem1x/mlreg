@@ -48,16 +48,26 @@ int main(int argc, char** argv) {
   vis.addPointCloud<Digest::PointType>(digest_target->getReducedCloud(), "reduced_cloud_target");
   vis.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 2, "reduced_cloud_target");
 
-  // Add the keypoints of the reduced pointclouds
-  pcl::visualization::PointCloudColorHandlerCustom<Digest::KeypointType> source_keypoint_color_handler(digest_source->getKeypointCloud(), 0, 255, 0);
-  vis.addPointCloud<Digest::KeypointType>(digest_source->getKeypointCloud(), source_keypoint_color_handler, "keypoint_cloud_source");
+  // Add the location of all keypoints which were over the threshold
+  pcl::visualization::PointCloudColorHandlerCustom<Digest::PointType> source_keypoint_color_handler(digest_source->getDescriptorCloudPoints(), 0, 255, 0);
+  vis.addPointCloud<Digest::PointType>(digest_source->getDescriptorCloudPoints(), source_keypoint_color_handler, "keypoint_cloud_source");
   vis.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 6, "keypoint_cloud_source");
-  pcl::visualization::PointCloudColorHandlerCustom<Digest::KeypointType> target_keypoint_color_handler(digest_target->getKeypointCloud(), 0, 0, 255); 
-  vis.addPointCloud<Digest::KeypointType>(digest_target->getKeypointCloud(), target_keypoint_color_handler, "keypoint_cloud_target");
+  pcl::visualization::PointCloudColorHandlerCustom<Digest::PointType> target_keypoint_color_handler(digest_target->getDescriptorCloudPoints(), 0, 0, 255); 
+  vis.addPointCloud<Digest::PointType>(digest_target->getDescriptorCloudPoints(), target_keypoint_color_handler, "keypoint_cloud_target");
   vis.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 6, "keypoint_cloud_target");
 
 
   // Draw lines for the correspondences between the reduced pointclouds
+  DigestMatch<MLMSVM>::Correspondences corrs = digest_match.getCorrespondences();
+  for (DigestMatch<MLMSVM>::Correspondences::iterator it = corrs.begin(); it != corrs.end(); ++it) {
+    std::stringstream corr_name;
+    int d_src = it->source_id;
+    int d_trg = it->target_id;
+    int p_src = digest_source->getDescriptorCloudIndices()->at(d_src);
+    int p_trg = digest_target->getDescriptorCloudIndices()->at(d_trg);
+    corr_name << "Point " << p_src << " -> Point " << p_trg << " (Descriptor IDs " << d_src << " -> " << d_trg;
+    vis.addLine<pcl::PointXYZ>(digest_source->getReducedCloud()->at(p_src), digest_target->getReducedCloud()->at(p_trg), corr_name.str());
+  }
 
   while (!vis.wasStopped()) {
     vis.spinOnce(100);

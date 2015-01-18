@@ -21,15 +21,15 @@ int main(int argc, char** argv) {
   Digest::Parameters params_digest;
   DigestMatch<MLMType>::Parameters params_digest_match;
   // Create the machine learning module
-  std::shared_ptr<MLMType> mlm(new MLMType);
+  DigestMatch<MLMType>::MLMPtr mlm(new MLMType);
 
   // Load pointclouds
   pcl::io::loadPCDFile(argv[1], *pointcloud_source);
   pcl::io::loadPCDFile(argv[2], *pointcloud_target);
 
   // Digest the pointclouds!
-  std::shared_ptr<Digest> digest_source(new Digest(pointcloud_source, params_digest));
-  std::shared_ptr<Digest> digest_target(new Digest(pointcloud_target, params_digest));
+  Digest::Ptr digest_source(new Digest(pointcloud_source, params_digest));
+  Digest::Ptr digest_target(new Digest(pointcloud_target, params_digest));
 
   // Put the Digests into a DigestMatch!
   DigestMatch<MLMType> digest_match(digest_source, digest_target, mlm, params_digest_match);

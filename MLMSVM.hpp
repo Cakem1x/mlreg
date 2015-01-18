@@ -26,7 +26,7 @@ class MLMSVM {
 
     };
 
-    void train(std::shared_ptr<Digest>& digest_source, std::shared_ptr<Digest>& digest_target, TransformationHint& transformation_hint) {
+    void train(Digest::Ptr& digest_source, Digest::Ptr& digest_target, TransformationHint& transformation_hint) {
     };
 
     bool classify(Correspondence correspondence) {

@@ -37,6 +37,8 @@ class Digest {
       float keypoint_threshold = 0.001;
       float descriptor_radius = 4;
     };
+
+    typedef std::shared_ptr<Digest> Ptr;
     typedef pcl::PointXYZ PointType;
     typedef pcl::Normal NormalType;
     typedef pcl::PointXYZI KeypointType;

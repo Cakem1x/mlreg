@@ -21,6 +21,8 @@ template <typename MLMType>
 class DigestMatch {
 
   public:
+    typedef std::shared_ptr<DigestMatch<MLMType> > Ptr;
+    typedef std::shared_ptr<MLMType> MLMPtr;
     typedef std::vector<TransformationHint> TransformationHints;
     typedef std::vector<Correspondence> Correspondences;
 
@@ -35,7 +37,7 @@ class DigestMatch {
      * Most general Constructor.
      * The machine learning module will be trained with each TransformationHint which has a big enough confidence value.
      */
-    DigestMatch(std::shared_ptr<Digest> digest_source, std::shared_ptr<Digest> digest_target, std::shared_ptr<MLMType>& mlm, struct Parameters& params, TransformationHints transformation_hints)
+    DigestMatch(Digest::Ptr digest_source, Digest::Ptr digest_target, MLMPtr& mlm, struct Parameters& params, TransformationHints transformation_hints)
       : digest_source_(digest_source), 
         digest_target_(digest_target),
         mlm_(mlm),
@@ -68,7 +70,7 @@ class DigestMatch {
      * The machine learning module will be trained with the transformation_hint
      * when its confidence value is bigger than the threshold from the parameters.
      */
-    DigestMatch(std::shared_ptr<Digest> digest_source, std::shared_ptr<Digest> digest_target, std::shared_ptr<MLMType> mlm, struct Parameters& params, TransformationHint& transformation_hint)
+    DigestMatch(Digest::Ptr digest_source, Digest::Ptr digest_target, MLMPtr mlm, struct Parameters& params, TransformationHint& transformation_hint)
       : DigestMatch(digest_source, digest_target, mlm, params, TransformationHints(1, transformation_hint))
     { };
 
@@ -76,7 +78,7 @@ class DigestMatch {
      * Constructor without a transformation_hint.
      * The machine learning module will not be trained.
      */
-    DigestMatch(std::shared_ptr<Digest> digest_source, std::shared_ptr<Digest> digest_target, std::shared_ptr<MLMType> mlm, struct Parameters& params)
+    DigestMatch(Digest::Ptr digest_source, Digest::Ptr digest_target, MLMPtr mlm, struct Parameters& params)
       : DigestMatch(digest_source, digest_target, mlm, params, TransformationHints())
     { };
 
@@ -99,9 +101,9 @@ class DigestMatch {
     }
 
   protected:
-    std::shared_ptr<Digest> digest_source_;
-    std::shared_ptr<Digest> digest_target_;
-    std::shared_ptr<MLMType> mlm_;
+    Digest::Ptr digest_source_;
+    Digest::Ptr digest_target_;
+    MLMPtr mlm_;
     Correspondences correspondences_;
     struct Parameters params_;
     TransformationHints transformation_hints_;

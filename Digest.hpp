@@ -78,15 +78,6 @@ class Digest {
       std::cout << "Extracted " << descriptor_cloud_->size() << " descriptors." << std::endl;
     };
 
-    /*!
-     * Copy constructor with a transformation to transform the copied digest
-     */
-    Digest(const Digest& other, const Eigen::Affine3f& tf) 
-      : Digest(other)
-    {
-      // TODO stub
-    }
-
     /*! 
      * Destructor.
      */

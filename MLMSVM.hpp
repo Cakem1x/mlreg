@@ -11,10 +11,22 @@
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/ml/ml.hpp>
+
+#include <pcl/registration/transforms.h>
+
 #include "shared_types.hpp"
 
-using namespace cv;
-
+/*! 
+ * This class wraps OpenCV's Support Vector Machine for use on correspondences inside mlreg.
+ * It uses the FPFH-distance correspondences for its classification.
+ * The classified classes are "true correspondence" or "false correspondence".
+ * For training, it'll use correspondences from a TransformationHint, which also contains 
+ * a transformation. This transformation can come from multiple sources:
+ *    ground-truth data when training the  algorithm for a known environment
+ *    some intialization cloud obtained without moving the sensor and artificially put noise on the cloud
+ *    robot odometry while it has high preicison
+ *    ...
+ */
 class MLMSVM {
   public:
     /*!
@@ -26,15 +38,24 @@ class MLMSVM {
 
     };
 
-    void train(Digest::Ptr& digest_source, Digest::Ptr& digest_target, TransformationHint& transformation_hint) {
+    void train(const Digest::Ptr& digest_source, const Digest::Ptr& digest_target, const TransformationHint& transformation_hint) {
+      // Will store the source cloud
+      Digest::Cloud::ConstPtr cloud_source = digest_source->getReducedCloud();
+      // Will store the transformed target cloud
+      Digest::Cloud::Ptr cloud_target(new Digest::Cloud);
+
+      // Transform the target cloud with the tf from the TransformationHint:
+      pcl::transformPointCloud(*(digest_target->getReducedCloud()), *cloud_target, transformation_hint.transformation);
+
+      // Search for corresponding point in close proximity, set found (=true/false) as class for svm
     };
 
-    bool classify(Correspondence correspondence) {
+    bool classify(Correspondence correspondence) const {
       return true;
     };
 
   protected:
-    SVM svm_;
+    cv::SVM svm_;
 };
 
 #endif

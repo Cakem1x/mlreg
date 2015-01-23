@@ -24,12 +24,24 @@ int main(int argc, char** argv) {
   //--------------------------------------------------------------------
   // Get the parameters:
   //--------------------------------------------------------------------
-  po::options_description desc("Allowed options");
-  desc.add_options()
+  std::string ps_path;
+  std::string pt_path;
+
+  po::options_description params_main_description("Allowed options");
+  params_main_description.add_options()
     ("help", "produce this message")
-    ("pointcloud-source,ps", po::value<std::string>(), "Path to the source pointcloud")
-    ("pointcloud-target,pt", po::value<std::string>(), "Path to the target pointcloud")
+    ("pointcloud-source,s", po::value<std::string>(&ps_path), "Path to the source pointcloud (necessary)")
+    ("pointcloud-target,t", po::value<std::string>(&pt_path), "Path to the target pointcloud (necessary)")
   ;
+  po::variables_map params_main;
+  po::store(po::parse_command_line(argc, argv, params_main_description), params_main);
+  po::notify(params_main);
+
+  if (params_main.count("help") || !params_main.count("pointcloud-source") || !params_main.count("pointcloud-target")) {
+    // Print the help message and terminate
+    std::cout << params_main_description << std::endl;
+    return 1;
+  }
 
   //--------------------------------------------------------------------
   // Create the digest and the digest match:
@@ -42,8 +54,8 @@ int main(int argc, char** argv) {
   DigestMatch<MLMType>::MLMPtr mlm(new MLMType);
 
   // Load pointclouds
-  pcl::io::loadPCDFile(argv[1], *pointcloud_source);
-  pcl::io::loadPCDFile(argv[2], *pointcloud_target);
+  pcl::io::loadPCDFile(ps_path, *pointcloud_source);
+  pcl::io::loadPCDFile(pt_path, *pointcloud_target);
 
   // Digest the pointclouds
   Digest::Ptr digest_source(new Digest(pointcloud_source, params_digest));

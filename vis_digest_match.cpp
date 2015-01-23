@@ -13,9 +13,27 @@
 #include <pcl/visualization/pcl_visualizer.h>
 #include <pcl/io/pcd_io.h>
 
+#include <boost/filesystem.hpp>
+#include <boost/program_options.hpp>
+
 typedef MLMSVM MLMType;
+namespace po = boost::program_options;
+namespace pclvis = pcl::visualization;
 
 int main(int argc, char** argv) {
+  //--------------------------------------------------------------------
+  // Get the parameters:
+  //--------------------------------------------------------------------
+  po::options_description desc("Allowed options");
+  desc.add_options()
+    ("help", "produce this message")
+    ("pointcloud-source,ps", po::value<std::string>(), "Path to the source pointcloud")
+    ("pointcloud-target,pt", po::value<std::string>(), "Path to the target pointcloud")
+  ;
+
+  //--------------------------------------------------------------------
+  // Create the digest and the digest match:
+  //--------------------------------------------------------------------
   Digest::Cloud::Ptr pointcloud_source(new Digest::Cloud);
   Digest::Cloud::Ptr pointcloud_target(new Digest::Cloud);
   Digest::Parameters params_digest;
@@ -27,35 +45,34 @@ int main(int argc, char** argv) {
   pcl::io::loadPCDFile(argv[1], *pointcloud_source);
   pcl::io::loadPCDFile(argv[2], *pointcloud_target);
 
-  // Digest the pointclouds!
+  // Digest the pointclouds
   Digest::Ptr digest_source(new Digest(pointcloud_source, params_digest));
   Digest::Ptr digest_target(new Digest(pointcloud_target, params_digest));
 
-  // Put the Digests into a DigestMatch!
+  // Put the Digests into a DigestMatch
   DigestMatch<MLMType> digest_match(digest_source, digest_target, mlm, params_digest_match);
 
   //--------------------------------------------------------------------
-  // Visualization-stuff from here:
+  // Visualization:
   //--------------------------------------------------------------------
-  pcl::visualization::PCLVisualizer vis("Digest Matcher Visualization");
+  pclvis::PCLVisualizer vis("Digest Matcher Visualization");
   vis.setBackgroundColor(0,0,0);
 
   // Add the reduced pointclouds
-  pcl::visualization::PointCloudColorHandlerCustom<Digest::PointType> source_cloud_color_handler(digest_source->getReducedCloud(), 255, 255, 0);
+  pclvis::PointCloudColorHandlerCustom<Digest::PointType> source_cloud_color_handler(digest_source->getReducedCloud(), 255, 255, 0);
   vis.addPointCloud<Digest::PointType>(digest_source->getReducedCloud(), source_cloud_color_handler, "reduced_cloud_source");
-  vis.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 2, "reduced_cloud_source");
-  pcl::visualization::PointCloudColorHandlerCustom<Digest::PointType> target_cloud_color_handler(digest_target->getReducedCloud(), 255, 0, 255);
+  vis.setPointCloudRenderingProperties (pclvis::PCL_VISUALIZER_POINT_SIZE, 2, "reduced_cloud_source");
+  pclvis::PointCloudColorHandlerCustom<Digest::PointType> target_cloud_color_handler(digest_target->getReducedCloud(), 255, 0, 255);
   vis.addPointCloud<Digest::PointType>(digest_target->getReducedCloud(), "reduced_cloud_target");
-  vis.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 2, "reduced_cloud_target");
+  vis.setPointCloudRenderingProperties (pclvis::PCL_VISUALIZER_POINT_SIZE, 2, "reduced_cloud_target");
 
   // Add the location of all keypoints which were over the threshold
-  pcl::visualization::PointCloudColorHandlerCustom<Digest::PointType> source_keypoint_color_handler(digest_source->getDescriptorCloudPoints(), 0, 255, 0);
+  pclvis::PointCloudColorHandlerCustom<Digest::PointType> source_keypoint_color_handler(digest_source->getDescriptorCloudPoints(), 0, 255, 0);
   vis.addPointCloud<Digest::PointType>(digest_source->getDescriptorCloudPoints(), source_keypoint_color_handler, "keypoint_cloud_source");
-  vis.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 6, "keypoint_cloud_source");
-  pcl::visualization::PointCloudColorHandlerCustom<Digest::PointType> target_keypoint_color_handler(digest_target->getDescriptorCloudPoints(), 0, 0, 255); 
+  vis.setPointCloudRenderingProperties (pclvis::PCL_VISUALIZER_POINT_SIZE, 6, "keypoint_cloud_source");
+  pclvis::PointCloudColorHandlerCustom<Digest::PointType> target_keypoint_color_handler(digest_target->getDescriptorCloudPoints(), 0, 0, 255); 
   vis.addPointCloud<Digest::PointType>(digest_target->getDescriptorCloudPoints(), target_keypoint_color_handler, "keypoint_cloud_target");
-  vis.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 6, "keypoint_cloud_target");
-
+  vis.setPointCloudRenderingProperties (pclvis::PCL_VISUALIZER_POINT_SIZE, 6, "keypoint_cloud_target");
 
   // Draw lines for the correspondences between the reduced pointclouds
   DigestMatch<MLMSVM>::Correspondences corrs = digest_match.getCorrespondences();

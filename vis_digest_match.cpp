@@ -146,8 +146,14 @@ int main(int argc, char** argv) {
     int d_trg = it->target_id;
     int p_src = digest_source->getDescriptorCloudIndices()->at(d_src);
     int p_trg = digest_target->getDescriptorCloudIndices()->at(d_trg);
-    corr_name << "Point " << p_src << " -> Point " << p_trg << " (Descriptor IDs " << d_src << " -> " << d_trg;
-    vis.addLine<pcl::PointXYZ>(digest_source->getReducedCloud()->at(p_src), digest_target->getReducedCloud()->at(p_trg), corr_name.str());
+    pcl::PointXYZ src = digest_source->getReducedCloud()->at(p_src);
+    pcl::PointXYZ trg = digest_target->getReducedCloud()->at(p_trg);
+    pcl::PointXYZ midpoint(src.x + ((trg.x - src.x) / 2),
+                           src.y + ((trg.y - src.y) / 2),
+                           src.z + ((trg.z - src.z) / 2));
+    corr_name << "Point " << p_src << " -> Point " << p_trg << " (Descriptor IDs " << d_src << " -> " << d_trg << ")";
+    vis.addLine<pcl::PointXYZ>(src, trg, corr_name.str());
+    vis.addText3D<pcl::PointXYZ>(corr_name.str(), midpoint, 0.05, 255, 255, 255, corr_name.str() + "txt");
   }
 
   //TODO: Make transforming the pointclouds possible

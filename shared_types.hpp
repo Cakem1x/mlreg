@@ -39,4 +39,5 @@ struct Correspondence {
   Digest::DescriptorType distance;
 };
 
+typedef std::vector<TransformationHint> TransformationHints;
 #endif

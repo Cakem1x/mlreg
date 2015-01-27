@@ -83,7 +83,7 @@ int main(int argc, char** argv) {
   }
 
   // Create TransformationHints datastructure
-  DigestMatch::TransformationHints tf_hints;
+  TransformationHints tf_hints;
   if (params_main.count("groundtruth-source") && params_main.count("groundtruth-target")) {
     std::ifstream ground_truth_file_source(gs_path);
     std::ifstream ground_truth_file_target(gt_path);

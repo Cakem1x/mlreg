@@ -23,7 +23,6 @@ class DigestMatch {
   public:
     typedef std::shared_ptr<DigestMatch> Ptr;
     typedef std::shared_ptr<MLModule> MLMPtr;
-    typedef std::vector<TransformationHint> TransformationHints;
     typedef std::vector<Correspondence> Correspondences;
 
     /*!
@@ -96,8 +95,15 @@ class DigestMatch {
      * the original point can be found at reduced_cloud[n].
      * descr_cloud->at[correspondences.source_id] will get you the actual descriptor.
      */
-    Correspondences getCorrespondences() {
+    const Correspondences getCorrespondences() const {
       return correspondences_;
+    }
+
+    /*!
+     * Returns this DigestMatch's TransformationHints.
+     */
+    const TransformationHints getTransformationHints() const {
+      return transformation_hints_;
     }
 
   protected:

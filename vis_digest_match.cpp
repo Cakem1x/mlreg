@@ -17,7 +17,6 @@
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 
-typedef MLMSVM MLMType;
 namespace po = boost::program_options;
 namespace pclvis = pcl::visualization;
 
@@ -84,7 +83,7 @@ int main(int argc, char** argv) {
   }
 
   // Create TransformationHints datastructure
-  DigestMatch<MLMType>::TransformationHints tf_hints;
+  DigestMatch::TransformationHints tf_hints;
   if (params_main.count("groundtruth-source") && params_main.count("groundtruth-target")) {
     std::ifstream ground_truth_file_source(gs_path);
     std::ifstream ground_truth_file_target(gt_path);
@@ -101,9 +100,9 @@ int main(int argc, char** argv) {
   Digest::Cloud::Ptr pointcloud_source(new Digest::Cloud);
   Digest::Cloud::Ptr pointcloud_target(new Digest::Cloud);
   Digest::Parameters params_digest;
-  DigestMatch<MLMType>::Parameters params_digest_match;
+  DigestMatch::Parameters params_digest_match;
   // Create the machine learning module
-  DigestMatch<MLMType>::MLMPtr mlm(new MLMType);
+  DigestMatch::MLMPtr mlm(new MLMSVM);
 
   // Load pointclouds
   pcl::io::loadPCDFile(ps_path, *pointcloud_source);
@@ -114,7 +113,7 @@ int main(int argc, char** argv) {
   Digest::Ptr digest_target(new Digest(pointcloud_target, params_digest));
 
   // Put the Digests into a DigestMatch
-  DigestMatch<MLMType> digest_match(digest_source, digest_target, mlm, params_digest_match, tf_hints);
+  DigestMatch digest_match(digest_source, digest_target, mlm, params_digest_match, tf_hints);
 
   //--------------------------------------------------------------------
   // Visualization:
@@ -139,8 +138,8 @@ int main(int argc, char** argv) {
   vis.setPointCloudRenderingProperties (pclvis::PCL_VISUALIZER_POINT_SIZE, 6, "keypoint_cloud_target");
 
   // Draw lines for the correspondences between the reduced pointclouds
-  DigestMatch<MLMSVM>::Correspondences corrs = digest_match.getCorrespondences();
-  for (DigestMatch<MLMSVM>::Correspondences::iterator it = corrs.begin(); it != corrs.end(); ++it) {
+  DigestMatch::Correspondences corrs = digest_match.getCorrespondences();
+  for (DigestMatch::Correspondences::iterator it = corrs.begin(); it != corrs.end(); ++it) {
     std::stringstream corr_name;
     int d_src = it->source_id;
     int d_trg = it->target_id;

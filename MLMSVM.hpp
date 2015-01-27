@@ -28,7 +28,7 @@
  *    robot odometry while it has high preicison
  *    ...
  */
-class MLMSVM : MLModule {
+class MLMSVM : public MLModule {
   public:
     /*!
      * Default constructor.

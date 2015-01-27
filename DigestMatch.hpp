@@ -11,18 +11,18 @@
 
 #include "shared_types.hpp"
 #include "Digest.hpp"
+#include "MLModule.hpp"
 
 /*!
  * The DigestMatch is used to match two Digests.
  * This class uses the descriptors of the Digest to calculate a transformation between the two Digest's pointclouds when they overlap enough.
- * It's templated with a machine learning module (MLMType) which is be used to filter the correspondences.
+ * It uses a machine learning module (MLModule) to filter the correspondences.
  */
-template <typename MLMType>
 class DigestMatch {
 
   public:
-    typedef std::shared_ptr<DigestMatch<MLMType> > Ptr;
-    typedef std::shared_ptr<MLMType> MLMPtr;
+    typedef std::shared_ptr<DigestMatch> Ptr;
+    typedef std::shared_ptr<MLModule> MLMPtr;
     typedef std::vector<TransformationHint> TransformationHints;
     typedef std::vector<Correspondence> Correspondences;
 

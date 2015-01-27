@@ -15,6 +15,7 @@
 #include <pcl/registration/transforms.h>
 
 #include "shared_types.hpp"
+#include "MLModule.hpp"
 
 /*! 
  * This class wraps OpenCV's Support Vector Machine for use on correspondences inside mlreg.
@@ -27,7 +28,7 @@
  *    robot odometry while it has high preicison
  *    ...
  */
-class MLMSVM {
+class MLMSVM : MLModule {
   public:
     /*!
      * Default constructor.
@@ -50,8 +51,8 @@ class MLMSVM {
       // Search for corresponding point in close proximity, set found (=true/false) as class for svm
     };
 
-    bool classify(Correspondence correspondence) const {
-      return true;
+    int classify(Correspondence& correspondence) const {
+      return 0;
     };
 
   protected:

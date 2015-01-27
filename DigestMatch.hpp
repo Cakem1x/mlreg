@@ -106,6 +106,20 @@ class DigestMatch {
       return transformation_hints_;
     }
 
+    /*!
+     * Returns the source Digest of this DigestMatch.
+     */
+    const Digest::Ptr getDigestSource() const {
+      return digest_source_;
+    }
+
+    /*!
+     * Returns the target Digest of this DigestMatch.
+     */
+    const Digest::Ptr getDigestTarget() const {
+      return digest_target_;
+    }
+
   protected:
     Digest::Ptr digest_source_;
     Digest::Ptr digest_target_;

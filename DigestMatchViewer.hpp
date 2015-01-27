@@ -14,6 +14,8 @@
 
 #include <pcl/visualization/pcl_visualizer.h>
 
+#include <boost/bind.hpp>
+
 namespace pclvis = pcl::visualization;
 
 /*!
@@ -25,9 +27,13 @@ class DigestMatchViewer : public pclvis::PCLVisualizer {
     DigestMatchViewer(const std::string& name = "", const bool create_interactor = true)
       : pclvis::PCLVisualizer(name, create_interactor) {
       setBackgroundColor(0,0,0);
+
+      // Register the keyboard event handler
+      boost::function<void (const pclvis::KeyboardEvent&)> f = boost::bind(&DigestMatchViewer::keyboardEventHandler, this, _1);
+      registerKeyboardCallback(f);
     }
 
-    virtual ~DigestMatchViewer() { };
+    virtual ~DigestMatchViewer() { }
 
     /*!
      * Adds another DigestMatch to the visualization.
@@ -69,7 +75,12 @@ class DigestMatchViewer : public pclvis::PCLVisualizer {
         addLine<pcl::PointXYZ>(src, trg, corr_name.str());
         addText3D<pcl::PointXYZ>(corr_name.str(), midpoint, 0.05, 255, 255, 255, corr_name.str() + "txt");
       }
+    }
 
+    /*!
+     * A new keyboard event handler for more buttons to press!.
+     */
+    void keyboardEventHandler(const pclvis::KeyboardEvent& event) {
     }
 
   protected:

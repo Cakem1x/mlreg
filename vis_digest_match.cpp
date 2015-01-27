@@ -8,9 +8,9 @@
 //----------------------------------------------------------------------
 #include "Digest.hpp"
 #include "DigestMatch.hpp"
+#include "DigestMatchViewer.hpp"
 #include "MLMSVM.hpp"
 
-#include <pcl/visualization/pcl_visualizer.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/common/angles.h>
 
@@ -113,49 +113,14 @@ int main(int argc, char** argv) {
   Digest::Ptr digest_target(new Digest(pointcloud_target, params_digest));
 
   // Put the Digests into a DigestMatch
-  DigestMatch digest_match(digest_source, digest_target, mlm, params_digest_match, tf_hints);
+  DigestMatch::Ptr digest_match(new DigestMatch(digest_source, digest_target, mlm, params_digest_match, tf_hints));
 
   //--------------------------------------------------------------------
   // Visualization:
   //--------------------------------------------------------------------
-  pclvis::PCLVisualizer vis("Digest Matcher Visualization");
-  vis.setBackgroundColor(0,0,0);
+  DigestMatchViewer vis("Digest Matcher Visualization");
 
-  // Add the reduced pointclouds
-  pclvis::PointCloudColorHandlerCustom<Digest::PointType> source_cloud_color_handler(digest_source->getReducedCloud(), 255, 255, 0);
-  vis.addPointCloud<Digest::PointType>(digest_source->getReducedCloud(), source_cloud_color_handler, "reduced_cloud_source");
-  vis.setPointCloudRenderingProperties (pclvis::PCL_VISUALIZER_POINT_SIZE, 2, "reduced_cloud_source");
-  pclvis::PointCloudColorHandlerCustom<Digest::PointType> target_cloud_color_handler(digest_target->getReducedCloud(), 255, 0, 255);
-  vis.addPointCloud<Digest::PointType>(digest_target->getReducedCloud(), "reduced_cloud_target");
-  vis.setPointCloudRenderingProperties (pclvis::PCL_VISUALIZER_POINT_SIZE, 2, "reduced_cloud_target");
-
-  // Add the location of all keypoints which were over the threshold
-  pclvis::PointCloudColorHandlerCustom<Digest::PointType> source_keypoint_color_handler(digest_source->getDescriptorCloudPoints(), 0, 255, 0);
-  vis.addPointCloud<Digest::PointType>(digest_source->getDescriptorCloudPoints(), source_keypoint_color_handler, "keypoint_cloud_source");
-  vis.setPointCloudRenderingProperties (pclvis::PCL_VISUALIZER_POINT_SIZE, 6, "keypoint_cloud_source");
-  pclvis::PointCloudColorHandlerCustom<Digest::PointType> target_keypoint_color_handler(digest_target->getDescriptorCloudPoints(), 0, 0, 255); 
-  vis.addPointCloud<Digest::PointType>(digest_target->getDescriptorCloudPoints(), target_keypoint_color_handler, "keypoint_cloud_target");
-  vis.setPointCloudRenderingProperties (pclvis::PCL_VISUALIZER_POINT_SIZE, 6, "keypoint_cloud_target");
-
-  // Draw lines for the correspondences between the reduced pointclouds
-  DigestMatch::Correspondences corrs = digest_match.getCorrespondences();
-  for (DigestMatch::Correspondences::iterator it = corrs.begin(); it != corrs.end(); ++it) {
-    std::stringstream corr_name;
-    int d_src = it->source_id;
-    int d_trg = it->target_id;
-    int p_src = digest_source->getDescriptorCloudIndices()->at(d_src);
-    int p_trg = digest_target->getDescriptorCloudIndices()->at(d_trg);
-    pcl::PointXYZ src = digest_source->getReducedCloud()->at(p_src);
-    pcl::PointXYZ trg = digest_target->getReducedCloud()->at(p_trg);
-    pcl::PointXYZ midpoint(src.x + ((trg.x - src.x) / 2),
-                           src.y + ((trg.y - src.y) / 2),
-                           src.z + ((trg.z - src.z) / 2));
-    corr_name << "Point " << p_src << " -> Point " << p_trg << " (Descriptor IDs " << d_src << " -> " << d_trg << ")";
-    vis.addLine<pcl::PointXYZ>(src, trg, corr_name.str());
-    vis.addText3D<pcl::PointXYZ>(corr_name.str(), midpoint, 0.05, 255, 255, 255, corr_name.str() + "txt");
-  }
-
-  //TODO: Make transforming the pointclouds possible
+  vis.addDigestMatch(digest_match);
 
   while (!vis.wasStopped()) {
     vis.spinOnce(100);

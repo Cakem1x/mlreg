@@ -10,9 +10,11 @@
 #define DIGEST_MATCH_VIEWER_HPP_INCLUDED
 
 #include "DigestMatch.hpp"
+#include "Digest.hpp"
 #include "shared_types.hpp"
 
 #include <pcl/visualization/pcl_visualizer.h>
+#include <pcl/common/transforms.h>
 
 #include <boost/bind.hpp>
 
@@ -25,7 +27,9 @@ namespace pclvis = pcl::visualization;
 class DigestMatchViewer : public pclvis::PCLVisualizer {
   public:
     DigestMatchViewer(const std::string& name = "", const bool create_interactor = true)
-      : pclvis::PCLVisualizer(name, create_interactor) {
+      : pclvis::PCLVisualizer(name, create_interactor),
+        displayed_tf_id_(0)
+    {
       setBackgroundColor(0,0,0);
 
       // Register the keyboard event handler
@@ -39,7 +43,7 @@ class DigestMatchViewer : public pclvis::PCLVisualizer {
      * Adds another DigestMatch to the visualization.
      */
     void addDigestMatch(DigestMatch::Ptr& digest_match) {
-      digest_matches_.push_back(digest_match);
+      digest_match_ = digest_match;
       // Add the reduced pointclouds
       Digest::Ptr digest_source = digest_match->getDigestSource();
       Digest::Ptr digest_target = digest_match->getDigestTarget();
@@ -59,32 +63,63 @@ class DigestMatchViewer : public pclvis::PCLVisualizer {
       setPointCloudRenderingProperties (pclvis::PCL_VISUALIZER_POINT_SIZE, 6, "keypoint_cloud_target");
 
       // Draw lines for the correspondences between the reduced pointclouds
-      DigestMatch::Correspondences corrs = digest_match->getCorrespondences();
+      drawCorrespondences(Eigen::Affine3f::Identity());
+    }
+
+    /*!
+     * A new keyboard event handler which handles the following commands:
+     *   -y: Toggle between identity and the first tf hint for displaying the pointclouds.
+     */
+    void keyboardEventHandler(const pclvis::KeyboardEvent& event) {
+      if (event.getKeySym() == "y" && event.keyDown()) {
+        // Toggle displayed_tf_id_:
+        displayed_tf_id_ = !displayed_tf_id_;
+        // For each displayed DigestMatch
+        // Get the first tf hint
+        Eigen::Affine3f tf = Eigen::Affine3f::Identity();
+        const Digest::Cloud target = *(digest_match_->getDigestTarget()->getReducedCloud());
+        Digest::Cloud target_transformed;
+
+        if (displayed_tf_id_ > 0 && digest_match_->getTransformationHints().size() > 0) { // if the new tf to display isn't the identity:
+          tf = digest_match_->getTransformationHints()[0].transformation;
+        }
+
+        // Update the poses of all displayed clouds
+        updatePointCloudPose("reduced_cloud_target", tf);
+        updatePointCloudPose("keypoint_cloud_target", tf);
+        // Update the correspondences
+        drawCorrespondences(tf);
+      }
+    }
+
+  protected:
+    DigestMatch::Ptr digest_match_;
+    int displayed_tf_id_;
+
+    /*!
+     * Redraws the correspondences of the currently displayed DigestMatch.
+     * The target cloud will be transformed by tf.
+     */
+    void drawCorrespondences(Eigen::Affine3f tf) {
+      removeAllShapes();
+      DigestMatch::Correspondences corrs = digest_match_->getCorrespondences();
       for (DigestMatch::Correspondences::iterator it = corrs.begin(); it != corrs.begin()+3; ++it) { //TODO: removed debug code (begin() + 3)
         std::stringstream corr_name;
         int d_src = it->source_id;
         int d_trg = it->target_id;
-        int p_src = digest_source->getDescriptorCloudIndices()->at(d_src);
-        int p_trg = digest_target->getDescriptorCloudIndices()->at(d_trg);
-        pcl::PointXYZ src = digest_source->getReducedCloud()->at(p_src);
-        pcl::PointXYZ trg = digest_target->getReducedCloud()->at(p_trg);
+        int p_src = digest_match_->getDigestSource()->getDescriptorCloudIndices()->at(d_src);
+        int p_trg = digest_match_->getDigestTarget()->getDescriptorCloudIndices()->at(d_trg);
+        pcl::PointXYZ src = digest_match_->getDigestSource()->getReducedCloud()->at(p_src);
+        pcl::PointXYZ trg = digest_match_->getDigestTarget()->getReducedCloud()->at(p_trg);
+        trg = pcl::transformPoint(trg, tf);
         pcl::PointXYZ midpoint(src.x + ((trg.x - src.x) / 2),
                                src.y + ((trg.y - src.y) / 2),
                                src.z + ((trg.z - src.z) / 2));
         corr_name << "Point " << p_src << " -> Point " << p_trg << " (Descriptor IDs " << d_src << " -> " << d_trg << ")";
-        addLine<pcl::PointXYZ>(src, trg, corr_name.str());
-        addText3D<pcl::PointXYZ>(corr_name.str(), midpoint, 0.05, 255, 255, 255, corr_name.str() + "txt");
+        addLine<Digest::PointType>(src, trg, corr_name.str());
+        addText3D<Digest::PointType>(corr_name.str(), midpoint, 0.05, 255, 255, 255, corr_name.str() + "txt");
       }
     }
-
-    /*!
-     * A new keyboard event handler for more buttons to press!.
-     */
-    void keyboardEventHandler(const pclvis::KeyboardEvent& event) {
-    }
-
-  protected:
-    std::vector<DigestMatch::Ptr> digest_matches_;
 };
 
 #endif

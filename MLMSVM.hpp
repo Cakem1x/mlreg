@@ -41,9 +41,9 @@ class MLMSVM : public MLModule {
      * Default constructor with parameters.
      */
     MLMSVM(struct Parameters& params)
-     : params_(params), svm_()
+     : svm_(),
+       params_(params)
     {
-
     }
 
     void train(const Digest::Ptr& digest_source, const Digest::Ptr& digest_target, const TransformationHint& transformation_hint, const Correspondences& correspondences) {
@@ -51,19 +51,29 @@ class MLMSVM : public MLModule {
       Digest::Cloud::ConstPtr cloud_source = digest_source->getReducedCloud();
       // Stores the transformed target cloud
       Digest::Cloud::Ptr cloud_target(new Digest::Cloud);
+      // Stores the training data
+      cv::Mat trainingData(33, correspondences.size(), CV_32FC1);
+      // Stores the training labels
+      cv::Mat labels(1, correspondences.size(), CV_32SC1);
 
       // Transform the target cloud with the tf from the TransformationHint:
       pcl::transformPointCloud(*(digest_target->getReducedCloud()), *cloud_target, transformation_hint.transformation);
 
       // Iterate through all correspondences and define their class by the distance between the transformed corresponding points
-      for (Correspondences::const_iterator it = correspondences.begin(); it != correspondences.end(); ++it) {
+      for (unsigned int i = 0; i < correspondences.size(); ++i) {
         bool correct_correspondence;
-        Digest::PointType p_src = cloud_source->at(digest_source->getDescriptorCloudIndices()->at(it->source_id));
-        Digest::PointType p_trg = cloud_target->at(digest_target->getDescriptorCloudIndices()->at(it->target_id));
+        Digest::PointType p_src = cloud_source->at(digest_source->getDescriptorCloudIndices()->at(correspondences[i].source_id));
+        Digest::PointType p_trg = cloud_target->at(digest_target->getDescriptorCloudIndices()->at(correspondences[i].target_id));
         Digest::PointType p_diff(p_src.x - p_trg.x, p_src.y - p_trg.y, p_src.z - p_trg.z);
         // set the class of the correspondence depending on their euclidean distance
-        correct_correspondence = p_diff.x * p_diff.x + p_diff.y * p_diff.y + p_diff.z * p_diff.z <= params_.correct_corr_max_distance_squared;
+        labels.at<int>(1,i) = (p_diff.x * p_diff.x + p_diff.y * p_diff.y + p_diff.z * p_diff.z <= params_.correct_corr_max_distance_squared);
+        // add the feature vector to the training data
+        for (unsigned int j = 0; j < 33; ++j) {
+          trainingData.at<float>(j,i) = correspondences[i].distance.histogram[j];
+        }
       }
+      // train the svm
+      svm_.train(trainingData, labels, cv::Mat(), cv::Mat(), cv::SVMParams());
     }
 
     int classify(Correspondence& correspondence) const {

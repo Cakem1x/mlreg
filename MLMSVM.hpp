@@ -31,13 +31,20 @@
 class MLMSVM : public MLModule {
   public:
     /*!
-     * Default constructor.
+     * This struct is used for storing the parameters used by the MLMSVM class.
      */
-    MLMSVM()
-     : svm_()
+    struct Parameters {
+      float correct_corr_max_distance_squared = 0.01;
+    };
+
+    /*!
+     * Default constructor with parameters.
+     */
+    MLMSVM(struct Parameters& params)
+     : params_(params), svm_()
     {
 
-    };
+    }
 
     void train(const Digest::Ptr& digest_source, const Digest::Ptr& digest_target, const TransformationHint& transformation_hint, const Correspondences& correspondences) {
       // Stores the source cloud
@@ -48,7 +55,15 @@ class MLMSVM : public MLModule {
       // Transform the target cloud with the tf from the TransformationHint:
       pcl::transformPointCloud(*(digest_target->getReducedCloud()), *cloud_target, transformation_hint.transformation);
 
-      // Search for corresponding point in close proximity, set found (=true/false) as class for svm
+      // Iterate through all correspondences and define their class by the distance between the transformed corresponding points
+      for (Correspondences::const_iterator it = correspondences.begin(); it != correspondences.end(); ++it) {
+        bool correct_correspondence;
+        Digest::PointType p_src = cloud_source->at(digest_source->getDescriptorCloudIndices()->at(it->source_id));
+        Digest::PointType p_trg = cloud_target->at(digest_target->getDescriptorCloudIndices()->at(it->target_id));
+        Digest::PointType p_diff(p_src.x - p_trg.x, p_src.y - p_trg.y, p_src.z - p_trg.z);
+        // set the class of the correspondence depending on their euclidean distance
+        correct_correspondence = p_diff.x * p_diff.x + p_diff.y * p_diff.y + p_diff.z * p_diff.z <= params_.correct_corr_max_distance_squared;
+      }
     }
 
     int classify(Correspondence& correspondence) const {
@@ -57,6 +72,7 @@ class MLMSVM : public MLModule {
 
   protected:
     cv::SVM svm_;
+    struct Parameters params_;
 };
 
 #endif

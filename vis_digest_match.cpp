@@ -101,8 +101,9 @@ int main(int argc, char** argv) {
   Digest::Cloud::Ptr pointcloud_target(new Digest::Cloud);
   Digest::Parameters params_digest;
   DigestMatch::Parameters params_digest_match;
+  MLMSVM::Parameters params_mlmsvm;
   // Create the machine learning module
-  DigestMatch::MLMPtr mlm(new MLMSVM);
+  DigestMatch::MLMPtr mlm(new MLMSVM(params_mlmsvm));
 
   // Load pointclouds
   pcl::io::loadPCDFile(ps_path, *pointcloud_source);

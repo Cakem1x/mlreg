@@ -29,3 +29,9 @@
 
 # vim swp files
 *.swp
+
+# the build directory
+build
+
+#ycm config
+.ycm_extra_conf.pyc

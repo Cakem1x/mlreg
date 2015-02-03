@@ -23,7 +23,6 @@ class DigestMatch {
   public:
     typedef std::shared_ptr<DigestMatch> Ptr;
     typedef std::shared_ptr<MLModule> MLMPtr;
-    typedef std::vector<Correspondence> Correspondences;
 
     /*!
      * This struct is used for storing the parameters used by the algorithms which create the digest match.
@@ -57,7 +56,7 @@ class DigestMatch {
       // Train the MLM when there are TransformationHints with suitable confidence
       for (TransformationHints::iterator it = transformation_hints_.begin(); it < transformation_hints_.end(); ++it) {
         if (it->confidence >= params_.hint_confidence_threshold) {
-          mlm_->train(digest_source_, digest_target_, *it);
+          mlm_->train(digest_source_, digest_target_, *it, correspondences_);
         }
       }
       

@@ -40,4 +40,5 @@ struct Correspondence {
 };
 
 typedef std::vector<TransformationHint> TransformationHints;
+typedef std::vector<Correspondence> Correspondences;
 #endif

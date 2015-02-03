@@ -39,21 +39,21 @@ class MLMSVM : public MLModule {
 
     };
 
-    void train(const Digest::Ptr& digest_source, const Digest::Ptr& digest_target, const TransformationHint& transformation_hint) {
-      // Will store the source cloud
+    void train(const Digest::Ptr& digest_source, const Digest::Ptr& digest_target, const TransformationHint& transformation_hint, const Correspondences& correspondences) {
+      // Stores the source cloud
       Digest::Cloud::ConstPtr cloud_source = digest_source->getReducedCloud();
-      // Will store the transformed target cloud
+      // Stores the transformed target cloud
       Digest::Cloud::Ptr cloud_target(new Digest::Cloud);
 
       // Transform the target cloud with the tf from the TransformationHint:
       pcl::transformPointCloud(*(digest_target->getReducedCloud()), *cloud_target, transformation_hint.transformation);
 
       // Search for corresponding point in close proximity, set found (=true/false) as class for svm
-    };
+    }
 
     int classify(Correspondence& correspondence) const {
       return 0;
-    };
+    }
 
   protected:
     cv::SVM svm_;

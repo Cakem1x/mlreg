@@ -34,7 +34,7 @@ class MLMSVM : public MLModule {
      * This struct is used for storing the parameters used by the MLMSVM class.
      */
     struct Parameters {
-      float correct_corr_max_distance_squared = 1.0;
+      float correct_corr_max_distance_squared = 0.04;
     };
 
     /*!

@@ -37,6 +37,17 @@ class MLModule {
      * Returns whether the MLModule is ready to classify.
      */
     virtual bool isReady() const = 0;
+
+    /*!
+     * Loads the model from some file.
+     */
+    virtual void loadModel() = 0;
+
+    /*
+     * Saves the svm model some file.
+     */
+    virtual void saveModel() const = 0;
+
 };
 
 #endif

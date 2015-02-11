@@ -100,7 +100,7 @@ class MLMSVM : public MLModule {
     /*
      * Saves the svm model to model_store_path. (see MLMSVM::Parameters)
      */
-    void saveModel() {
+    void saveModel() const {
       svm_.save(params_.model_store_path.c_str());
     }
 

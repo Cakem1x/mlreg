@@ -60,7 +60,14 @@ class DigestMatch {
         }
       }
       
-      //TODO: Filter correspondences
+      // Filter correspondences. When there is a good TransformationHint, this step is quite trivial, but it'll should be useful when there's no TransformationHint.
+      Correspondences filtered_correspondences;
+      for (Correspondences::const_iterator it = correspondences_.begin(); it != correspondences_.end(); ++it) {
+        if(mlm_->classify(*it) > 0) {
+          filtered_correspondences.push_back(*it);
+        }
+      }
+      correspondences_ = filtered_correspondences;
     };
 
     /*!

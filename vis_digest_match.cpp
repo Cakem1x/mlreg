@@ -59,10 +59,22 @@ int main(int argc, char** argv) {
   //--------------------------------------------------------------------
   // Get the parameters:
   //--------------------------------------------------------------------
+  Digest::Parameters params_digest;
   std::string ps_path;
   std::string pt_path;
   std::string gs_path;
   std::string gt_path;
+
+  po::options_description params_digest_description("Digest parameters");
+  params_digest_description.add_options()
+    ("voxelgrid-size", po::value<float>(&params_digest.voxelgrid_size)->default_value(0.2), "The size of the voxels for the voxel grid filter (in meters)")
+    ("normal-radius", po::value<float>(&params_digest.normal_radius)->default_value(0.6), "The radius for the normal search (in meters)")
+    ("ransac-threshold", po::value<float>(&params_digest.ransac_threshold)->default_value(1), 
+     "The maximum distance of two corresponding points so that SAC will consider them as an inlier (in meters)")
+    ("keypoint-radius", po::value<float>(&params_digest.keypoint_radius)->default_value(1), "The radius which is used for the keypoint search (in meters)")
+    ("keypoint-threshold", po::value<float>(&params_digest.keypoint_threshold)->default_value(0.01), "Keypoints with intensity lower than this threshold will be discarded. (in 'magic unit'... :( )")
+    ("descriptor-radius", po::value<float>(&params_digest.descriptor_radius)->default_value(4), "Radius for the descriptor calculation (in meters)")
+  ;
 
   po::options_description params_main_description("Allowed options");
   params_main_description.add_options()
@@ -72,6 +84,7 @@ int main(int argc, char** argv) {
     ("groundtruth-source", po::value<std::string>(&gs_path), "Path to the groundtruth for the source pointcloud (optional)")
     ("groundtruth-target", po::value<std::string>(&gt_path), "Path to the groundtruth for the target pointcloud (optional)")
   ;
+  params_main_description.add(params_digest_description);
   po::variables_map params_main;
   po::store(po::parse_command_line(argc, argv, params_main_description), params_main);
   po::notify(params_main);
@@ -99,7 +112,6 @@ int main(int argc, char** argv) {
   //--------------------------------------------------------------------
   Digest::Cloud::Ptr pointcloud_source(new Digest::Cloud);
   Digest::Cloud::Ptr pointcloud_target(new Digest::Cloud);
-  Digest::Parameters params_digest;
   DigestMatch::Parameters params_digest_match;
   MLMSVM::Parameters params_mlmsvm;
   // Create the machine learning module

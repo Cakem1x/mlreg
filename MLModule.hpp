@@ -24,10 +24,19 @@ class MLModule {
     virtual ~MLModule() { };
 
     /*!
+     * This method is used to implement some kind of training on correspondences with a given TransformationHint.
      */
     virtual void train(const Digest::Ptr& digest_source, const Digest::Ptr& digest_target, const TransformationHint& transformation_hint, const Correspondences& correspondences) = 0;
 
+    /*!
+     * This method is used to implement some kind of classification of a correspondence.
+     */
     virtual float classify(const Correspondence& correspondence) const = 0;
+
+    /*!
+     * Returns whether the MLModule is ready to classify.
+     */
+    virtual bool isReady() const = 0;
 };
 
 #endif

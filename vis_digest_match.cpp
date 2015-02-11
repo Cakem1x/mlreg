@@ -82,7 +82,7 @@ int main(int argc, char** argv) {
   po::options_description params_mlmsvm_description("MLMSVM parameters");
   params_mlmsvm_description.add_options()
     ("max-corr-distance-squared", po::value<float>(&params_mlmsvm.max_corr_distance_squared)->default_value(0.04), "The maximum distance between corresponding points so that they're still considered a valid correspondence (in meters)")
-    ("model-store-path", po::value<std::string>(&params_mlmsvm.model_store_path)->default_value("svm_model"), "Path to where the svm model should be saved")
+    ("model-store-path", po::value<std::string>(&params_mlmsvm.model_store_path)->default_value("svm_model.yaml"), "Path to where the svm model should be saved")
   ;
 
   po::options_description params_main_description("Allowed options");
@@ -146,5 +146,11 @@ int main(int argc, char** argv) {
   while (!vis.wasStopped()) {
     vis.spinOnce(100);
   }
+
+  //--------------------------------------------------------------------
+  // Save the svm's model:
+  //--------------------------------------------------------------------
+  mlm->saveModel();
+
   return 0;
 }

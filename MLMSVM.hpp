@@ -35,7 +35,7 @@ class MLMSVM : public MLModule {
      */
     struct Parameters {
       float max_corr_distance_squared = 0.04;
-      std::string model_store_path = "svm_model";
+      std::string model_store_path = "svm_model.yaml";
     };
 
     /*!

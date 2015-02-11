@@ -75,7 +75,7 @@ class MLMSVM : public MLModule {
       svm_.train(trainingData, labels, cv::Mat(), cv::Mat(), cv::SVMParams());
     }
 
-    int classify(Correspondence& correspondence) const {
+    int classify(const Correspondence& correspondence) const {
       return 0;
     }
 

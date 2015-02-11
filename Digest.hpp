@@ -36,6 +36,8 @@ class Digest {
       float keypoint_radius = 1;
       float keypoint_threshold = 0.01;
       float descriptor_radius = 4;
+      bool non_max_supression = false;
+      bool refinement = false;
     };
 
     typedef std::shared_ptr<Digest> Ptr;
@@ -219,8 +221,8 @@ class Digest {
       detector->setInputCloud(reduced_cloud_);
       detector->setNormals(normal_cloud_);
       detector->setIndices(valid_normal_cloud_indices_);
-      detector->setNonMaxSupression(false);
-      detector->setRefine(false);
+      detector->setNonMaxSupression(params_.non_max_supression);
+      detector->setRefine(params_.refinement);
       detector->setRadius(params_.keypoint_radius);
       detector->setMethod(pcl::HarrisKeypoint3D<pcl::PointXYZ, pcl::PointXYZI>::CURVATURE);
       //detector->setRadiusSearch(params_.keypoint_radius);

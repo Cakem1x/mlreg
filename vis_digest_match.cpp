@@ -60,6 +60,7 @@ int main(int argc, char** argv) {
   // Get the parameters:
   //--------------------------------------------------------------------
   Digest::Parameters params_digest;
+  MLMSVM::Parameters params_mlmsvm;
   std::string ps_path;
   std::string pt_path;
   std::string gs_path;
@@ -74,6 +75,14 @@ int main(int argc, char** argv) {
     ("keypoint-radius", po::value<float>(&params_digest.keypoint_radius)->default_value(1), "The radius which is used for the keypoint search (in meters)")
     ("keypoint-threshold", po::value<float>(&params_digest.keypoint_threshold)->default_value(0.01), "Keypoints with intensity lower than this threshold will be discarded. (in 'magic unit'... :( )")
     ("descriptor-radius", po::value<float>(&params_digest.descriptor_radius)->default_value(4), "Radius for the descriptor calculation (in meters)")
+    ("non-max-supression", po::value<bool>(&params_digest.non_max_supression)->default_value(0), "Sets the non maximum supression for the keypoint estimation (bool value)")
+    ("refinement", po::value<bool>(&params_digest.refinement)->default_value(0), "Sets the refinement for the keypoint estimation (bool value)")
+  ;
+
+  po::options_description params_mlmsvm_description("MLMSVM parameters");
+  params_mlmsvm_description.add_options()
+    ("max-corr-distance-squared", po::value<float>(&params_mlmsvm.max_corr_distance_squared)->default_value(0.04), "The maximum distance between corresponding points so that they're still considered a valid correspondence (in meters)")
+    ("model-store-path", po::value<std::string>(&params_mlmsvm.model_store_path)->default_value("svm_model"), "Path to where the svm model should be saved")
   ;
 
   po::options_description params_main_description("Allowed options");
@@ -84,7 +93,7 @@ int main(int argc, char** argv) {
     ("groundtruth-source", po::value<std::string>(&gs_path), "Path to the groundtruth for the source pointcloud (optional)")
     ("groundtruth-target", po::value<std::string>(&gt_path), "Path to the groundtruth for the target pointcloud (optional)")
   ;
-  params_main_description.add(params_digest_description);
+  params_main_description.add(params_digest_description).add(params_mlmsvm_description);
   po::variables_map params_main;
   po::store(po::parse_command_line(argc, argv, params_main_description), params_main);
   po::notify(params_main);
@@ -113,7 +122,6 @@ int main(int argc, char** argv) {
   Digest::Cloud::Ptr pointcloud_source(new Digest::Cloud);
   Digest::Cloud::Ptr pointcloud_target(new Digest::Cloud);
   DigestMatch::Parameters params_digest_match;
-  MLMSVM::Parameters params_mlmsvm;
   // Create the machine learning module
   DigestMatch::MLMPtr mlm(new MLMSVM(params_mlmsvm));
 

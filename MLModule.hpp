@@ -27,7 +27,7 @@ class MLModule {
      */
     virtual void train(const Digest::Ptr& digest_source, const Digest::Ptr& digest_target, const TransformationHint& transformation_hint, const Correspondences& correspondences) = 0;
 
-    virtual int classify(const Correspondence& correspondence) const = 0;
+    virtual float classify(const Correspondence& correspondence) const = 0;
 };
 
 #endif

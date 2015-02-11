@@ -65,7 +65,7 @@ class MLMSVM : public MLModule {
         Digest::PointType p_trg = cloud_target->at(digest_target->getDescriptorCloudIndices()->at(correspondences[i].target_id));
         Digest::PointType p_diff(p_src.x - p_trg.x, p_src.y - p_trg.y, p_src.z - p_trg.z);
         // set the class of the correspondence depending on their squared euclidean distance
-        labels.at<int>(i,1) = (p_diff.x * p_diff.x + p_diff.y * p_diff.y + p_diff.z * p_diff.z <= params_.correct_corr_max_distance_squared);
+        labels.at<int>(i,0) = (p_diff.x * p_diff.x + p_diff.y * p_diff.y + p_diff.z * p_diff.z <= params_.correct_corr_max_distance_squared);
         // add the feature vector to the training data
         for (unsigned int j = 0; j < 33; ++j) {
           trainingData.at<float>(i,j) = correspondences[i].distance.histogram[j];
@@ -75,8 +75,12 @@ class MLMSVM : public MLModule {
       svm_.train(trainingData, labels, cv::Mat(), cv::Mat(), cv::SVMParams());
     }
 
-    int classify(const Correspondence& correspondence) const {
-      return 0;
+    float classify(const Correspondence& correspondence) const {
+      cv::Mat sample(1, 33, CV_32FC1);
+      for (unsigned int j = 0; j < 33; ++j) {
+        sample.at<float>(0,j) = correspondence.distance.histogram[j];
+      }
+      return svm_.predict(sample);
     }
 
   protected:

@@ -103,7 +103,7 @@ class DigestMatchViewer : public pclvis::PCLVisualizer {
     void drawCorrespondences(Eigen::Affine3f tf) {
       removeAllShapes();
       Correspondences corrs = digest_match_->getCorrespondences();
-      for (Correspondences::iterator it = corrs.begin(); it != corrs.begin()+3; ++it) { //TODO: removed debug code (begin() + 3)
+      for (Correspondences::iterator it = corrs.begin(); it != corrs.end(); ++it) {
         std::stringstream corr_name;
         int d_src = it->source_id;
         int d_trg = it->target_id;

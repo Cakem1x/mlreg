@@ -95,6 +95,7 @@ class MLMSVM : public MLModule {
      */
     void loadModel() {
       svm_.load(params_.model_store_path.c_str());
+      ready_ = true;
     }
 
     /*

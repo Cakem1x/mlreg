@@ -34,7 +34,8 @@ class MLMSVM : public MLModule {
      * This struct is used for storing the parameters used by the MLMSVM class.
      */
     struct Parameters {
-      float correct_corr_max_distance_squared = 0.04;
+      float max_corr_distance_squared = 0.04;
+      std::string model_store_path = "svm_model";
     };
 
     /*!
@@ -42,7 +43,8 @@ class MLMSVM : public MLModule {
      */
     MLMSVM(struct Parameters& params)
      : svm_(),
-       params_(params)
+       params_(params),
+       ready_(false)
     {
     }
 
@@ -65,7 +67,7 @@ class MLMSVM : public MLModule {
         Digest::PointType p_trg = cloud_target->at(digest_target->getDescriptorCloudIndices()->at(correspondences[i].target_id));
         Digest::PointType p_diff(p_src.x - p_trg.x, p_src.y - p_trg.y, p_src.z - p_trg.z);
         // set the class of the correspondence depending on their squared euclidean distance
-        labels.at<int>(i,0) = (p_diff.x * p_diff.x + p_diff.y * p_diff.y + p_diff.z * p_diff.z <= params_.correct_corr_max_distance_squared);
+        labels.at<int>(i,0) = (p_diff.x * p_diff.x + p_diff.y * p_diff.y + p_diff.z * p_diff.z <= params_.max_corr_distance_squared);
         // add the feature vector to the training data
         for (unsigned int j = 0; j < 33; ++j) {
           trainingData.at<float>(i,j) = correspondences[i].distance.histogram[j];
@@ -73,6 +75,7 @@ class MLMSVM : public MLModule {
       }
       // train the svm
       svm_.train(trainingData, labels, cv::Mat(), cv::Mat(), cv::SVMParams());
+      ready_ = true;
     }
 
     float classify(const Correspondence& correspondence) const {
@@ -83,9 +86,28 @@ class MLMSVM : public MLModule {
       return svm_.predict(sample);
     }
 
+    bool isReady() const {
+      return ready_;
+    }
+
+    /*!
+     * Loads the svm model from model_store_path. (see MLMSVM::Parameters)
+     */
+    void loadModel() {
+      svm_.load(params_.model_store_path.c_str());
+    }
+
+    /*
+     * Saves the svm model to model_store_path. (see MLMSVM::Parameters)
+     */
+    void saveModel() {
+      svm_.save(params_.model_store_path.c_str());
+    }
+
   protected:
     cv::SVM svm_;
     struct Parameters params_;
+    bool ready_;
 };
 
 #endif

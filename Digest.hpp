@@ -34,7 +34,7 @@ class Digest {
       float normal_radius = 0.6;
       float ransac_threshold = 1;
       float keypoint_radius = 1;
-      float keypoint_threshold = 0.001;
+      float keypoint_threshold = 0.01;
       float descriptor_radius = 4;
     };
 
@@ -219,7 +219,7 @@ class Digest {
       detector->setInputCloud(reduced_cloud_);
       detector->setNormals(normal_cloud_);
       detector->setIndices(valid_normal_cloud_indices_);
-      detector->setNonMaxSupression(true);
+      detector->setNonMaxSupression(false);
       detector->setRefine(false);
       detector->setRadius(params_.keypoint_radius);
       detector->setMethod(pcl::HarrisKeypoint3D<pcl::PointXYZ, pcl::PointXYZI>::CURVATURE);

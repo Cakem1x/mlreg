@@ -61,6 +61,7 @@ int main(int argc, char** argv) {
   //--------------------------------------------------------------------
   Digest::Parameters params_digest;
   MLMSVM::Parameters params_mlmsvm;
+  bool load_stored_model;
   std::string ps_path;
   std::string pt_path;
   std::string gs_path;
@@ -83,6 +84,7 @@ int main(int argc, char** argv) {
   params_mlmsvm_description.add_options()
     ("max-corr-distance-squared", po::value<float>(&params_mlmsvm.max_corr_distance_squared)->default_value(0.04), "The maximum distance between corresponding points so that they're still considered a valid correspondence (in meters)")
     ("model-store-path", po::value<std::string>(&params_mlmsvm.model_store_path)->default_value("svm_model.yaml"), "Path to where the svm model should be saved")
+    ("load-stored-model", po::value<bool>(&load_stored_model)->default_value(false), "Whether to load the stored svm model")
   ;
 
   po::options_description params_main_description("Allowed options");
@@ -124,6 +126,9 @@ int main(int argc, char** argv) {
   DigestMatch::Parameters params_digest_match;
   // Create the machine learning module
   DigestMatch::MLMPtr mlm(new MLMSVM(params_mlmsvm));
+  if (load_stored_model) {
+    mlm->loadModel();
+  }
 
   // Load pointclouds
   pcl::io::loadPCDFile(ps_path, *pointcloud_source);

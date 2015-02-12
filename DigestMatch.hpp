@@ -9,6 +9,8 @@
 #ifndef DIGEST_MATCH_HPP_INCLUDED
 #define DIGEST_MATCH_HPP_INCLUDED
 
+#include <pcl/common/transformation_from_correspondences.h>
+
 #include "shared_types.hpp"
 #include "Digest.hpp"
 #include "MLModule.hpp"
@@ -103,14 +105,40 @@ class DigestMatch {
      * the original point can be found at reduced_cloud[n].
      * descr_cloud->at[correspondences.source_id] will get you the actual descriptor.
      */
-    const Correspondences getCorrespondences() const {
+    const Correspondences& getCorrespondences() const {
       return correspondences_;
+    }
+
+    /*!
+     * Calculates and returns the transformation defined between the two Digests by the correspondences of the DigestMatch.
+     */
+    const Transformation getTransformation() const {
+      pcl::TransformationFromCorrespondences corr_est;
+
+      for (Correspondences::const_iterator it = correspondences_.begin(); 
+           it != correspondences_.end(); ++it) {
+        // Get the 3D positions of the corresponding as Eigen::Vector3f
+        int d_src = it->source_id;
+        int d_trg = it->target_id;
+        int p_src = digest_source_->getDescriptorCloudIndices()->at(d_src);
+        int p_trg = digest_target_->getDescriptorCloudIndices()->at(d_trg);
+        pcl::PointXYZ temp_src = digest_source_->getReducedCloud()->at(p_src);
+        pcl::PointXYZ temp_trg = digest_target_->getReducedCloud()->at(p_trg);
+        Eigen::Vector3f src(temp_src.x, temp_src.y, temp_src.z);
+        Eigen::Vector3f trg(temp_trg.x, temp_trg.y, temp_trg.z);
+
+        // Add them to the correspondence estimation
+        corr_est.add(src, trg);
+      }
+
+      // Calculate and return the tf. It seems like the inverse tf is the one needed to fit in the rest of the code's logic.
+      return corr_est.getTransformation().inverse();
     }
 
     /*!
      * Returns this DigestMatch's TransformationHints.
      */
-    const TransformationHints getTransformationHints() const {
+    const TransformationHints& getTransformationHints() const {
       return transformation_hints_;
     }
 

@@ -12,12 +12,12 @@
 #include <eigen3/Eigen/Geometry>
 #include "Digest.hpp"
 
+typedef Eigen::Affine3f Transformation;
+
 /*!
  * Data structor to define a TransformationHint.
  */
 struct TransformationHint {
-      typedef Eigen::Affine3f Transformation;
-
       TransformationHint(Transformation transformation, float confidence)
         : transformation(transformation), confidence(confidence)
       { }

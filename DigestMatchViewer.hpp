@@ -27,8 +27,7 @@ namespace pclvis = pcl::visualization;
 class DigestMatchViewer : public pclvis::PCLVisualizer {
   public:
     DigestMatchViewer(const std::string& name = "", const bool create_interactor = true)
-      : pclvis::PCLVisualizer(name, create_interactor),
-        displayed_tf_id_(0)
+      : pclvis::PCLVisualizer(name, create_interactor)
     {
       setBackgroundColor(0,0,0);
 
@@ -68,22 +67,41 @@ class DigestMatchViewer : public pclvis::PCLVisualizer {
 
     /*!
      * A new keyboard event handler which handles the following commands:
-     *   -y: Toggle between identity and the first tf hint for displaying the pointclouds.
+     *   -y: Display the pointclouds transformed with the first tf hint.
+     *   -a: Display the pointclouds transformed with the calculated tf.
+     *   -x: Display the pointclouds untransformed.
      */
     void keyboardEventHandler(const pclvis::KeyboardEvent& event) {
-      if (event.getKeySym() == "y" && event.keyDown()) {
-        // Toggle displayed_tf_id_:
-        displayed_tf_id_ = !displayed_tf_id_;
-        // For each displayed DigestMatch
-        // Get the first tf hint
-        Eigen::Affine3f tf = Eigen::Affine3f::Identity();
+      // -y: Display the pointclouds transformed with the first tf hint.
+      if (event.getKeySym() == "y" && event.keyDown() && digest_match_->getTransformationHints().size() > 0) {
+        Eigen::Affine3f tf = digest_match_->getTransformationHints()[0].transformation;
         const Digest::Cloud target = *(digest_match_->getDigestTarget()->getReducedCloud());
         Digest::Cloud target_transformed;
 
-        if (displayed_tf_id_ > 0 && digest_match_->getTransformationHints().size() > 0) { // if the new tf to display isn't the identity:
-          tf = digest_match_->getTransformationHints()[0].transformation;
-        }
+        // Update the poses of all displayed clouds
+        updatePointCloudPose("reduced_cloud_target", tf);
+        updatePointCloudPose("keypoint_cloud_target", tf);
+        // Update the correspondences
+        drawCorrespondences(tf);
+      }
 
+      // -a: Display the pointclouds transformed with the calculated tf.
+      if (event.getKeySym() == "a" && event.keyDown() && digest_match_->getCorrespondences().size() > 0) {
+        Eigen::Affine3f tf = digest_match_->getTransformation();
+        const Digest::Cloud target = *(digest_match_->getDigestTarget()->getReducedCloud());
+        Digest::Cloud target_transformed;
+        // Update the poses of all displayed clouds
+        updatePointCloudPose("reduced_cloud_target", tf);
+        updatePointCloudPose("keypoint_cloud_target", tf);
+        // Update the correspondences
+        drawCorrespondences(tf);
+      }
+
+      // -x: Display the pointclouds untransformed.
+      if (event.getKeySym() == "x" && event.keyDown()) {
+        Eigen::Affine3f tf = Eigen::Affine3f::Identity();
+        const Digest::Cloud target = *(digest_match_->getDigestTarget()->getReducedCloud());
+        Digest::Cloud target_transformed;
         // Update the poses of all displayed clouds
         updatePointCloudPose("reduced_cloud_target", tf);
         updatePointCloudPose("keypoint_cloud_target", tf);
@@ -94,7 +112,6 @@ class DigestMatchViewer : public pclvis::PCLVisualizer {
 
   protected:
     DigestMatch::Ptr digest_match_;
-    int displayed_tf_id_;
 
     /*!
      * Redraws the correspondences of the currently displayed DigestMatch.
